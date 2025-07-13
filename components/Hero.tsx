@@ -11,7 +11,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 // import type { HTMLHeadingElement, HTMLParagraphElement, HTMLDivElement } from "react"
-
+import RotatingText from "./RotatingTexts";
 export default function Hero() {
   const heroRef = useRef<HTMLElement>(null);
   const nameRef = useRef<HTMLHeadingElement>(null);
@@ -48,7 +48,7 @@ export default function Hero() {
 
     // Floating animation for arrow
     gsap.to(".floating-arrow", {
-      y: 8,
+      y: 12,
       duration: 2.5,
       repeat: -1,
       yoyo: true,
@@ -74,8 +74,8 @@ export default function Hero() {
       <div className="bg-gradient absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-50 to-purple-50 rounded-full opacity-30 blur-3xl"></div>
       <div className="bg-gradient absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-green-50 to-blue-50 rounded-full opacity-30 blur-3xl"></div>
 
-      <div className="max-w-5xl mx-auto px-6 py-20 relative z-10">
-        <div className="max-w-3xl">
+      <div className="w-5xl mx-auto px-6 py-20 relative z-10">
+        <div className="w-3xl">
           <div className="flex items-center space-x-2 mb-6">
             <Code2 size={20} className="text-gray-600" />
             <span className="text-sm text-gray-600 font-medium">
@@ -89,12 +89,22 @@ export default function Hero() {
 
           <h2
             ref={titleRef}
-            className="text-5xl md:text-6xl font-light text-gray-900 mb-8 leading-tight"
+            className="w-full text-4xl sm:text-5xl md:text-6xl font-light text-gray-900 mb-2 leading-tight tracking-tight"
           >
-            I craft digital
-            <br />
-            <span className="font-medium bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-              experiences
+            I build digital{" "}
+            <span className="inline-block min-w-[8ch] md:min-w-[10ch] text-center">
+              <RotatingText
+                texts={["experiences", "products", "tools", "solutions"]}
+                mainClassName="w-fit  text-black overflow-hidden py-1 sm:py-1.5 md:py-2 rounded-lg "
+                staggerFrom="last"
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "-120%" }}
+                staggerDuration={0.025}
+                splitLevelClassName="overflow-hidden pb-1 sm:pb-1.5 md:pb-2"
+                transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                rotationInterval={2000}
+              />
             </span>
           </h2>
 
@@ -102,9 +112,7 @@ export default function Hero() {
             ref={subtitleRef}
             className="text-xl text-gray-600 mb-10 leading-relaxed max-w-2xl"
           >
-            Passionate about building elegant solutions with modern web
-            technologies. I love turning complex problems into simple,
-            beautiful, and intuitive applications.
+            I build simple and effective web apps that solve complex problems.
           </p>
 
           <div ref={detailsRef} className="space-y-6 mb-16">
@@ -140,8 +148,9 @@ export default function Hero() {
             </div> */}
           </div>
 
-          <div className="floating-arrow">
-            <ArrowDown className="text-gray-400" size={24} />
+          <div className="floating-arrow inline-flex gap-4 text-gray-400  items-center">
+            Scroll Down
+            <ArrowDown size={24} />
           </div>
         </div>
       </div>

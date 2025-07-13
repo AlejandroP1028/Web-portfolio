@@ -1,4 +1,4 @@
-const defaultConfig = require("tailwindcss/defaultConfig")
+const defaultConfig = require("tailwindcss/defaultConfig");
 
 module.exports = {
   ...defaultConfig,
@@ -61,5 +61,5 @@ module.exports = {
       },
     },
   },
-  plugins: [...defaultConfig.plugins, require("tailwindcss-animate")],
-}
+  plugins: [...defaultConfig.plugins],
+};

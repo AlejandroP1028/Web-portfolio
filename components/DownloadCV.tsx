@@ -9,10 +9,14 @@ import {
   Mail,
   Phone,
 } from "lucide-react";
+import { useForm, ValidationError } from "@formspree/react";
 
 export default function DownloadCV() {
   const sectionRef = useRef<HTMLElement>(null);
-
+  const [state, handleSubmit] = useForm("mdkdneoz");
+  if (state.succeeded) {
+    return <p>Thanks for joining!</p>;
+  }
   return (
     <section id="cv" ref={sectionRef} className="py-24 bg-gray-50/30">
       <div className="max-w-3xl mx-auto px-6 text-center space-y-12">

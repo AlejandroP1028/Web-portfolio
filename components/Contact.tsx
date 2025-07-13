@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useRef, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import {
   Mail,
   Github,
@@ -11,28 +11,37 @@ import {
   Send,
   ArrowUpRight,
 } from "lucide-react";
-
+import { toast } from "sonner";
+import { useForm, ValidationError } from "@formspree/react";
 export default function Contact() {
   const sectionRef = useRef<HTMLElement>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
+  // const [formData, setFormData] = useState({
+  //   name: "",
+  //   email: "",
+  //   message: "",
+  // });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-  };
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   console.log("Form submitted:", formData);
+  // };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  // const handleChange = (
+  //   e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  // ) => {
+  //   setFormData({
+  //     ...formData,
+  //     [e.target.name]: e.target.value,
+  //   });
+  // };
+  const [sent, setSent] = useState(false);
+  const [state, handleSubmit] = useForm("mdkdneoz");
+  useEffect(() => {
+    if (state.succeeded) {
+      toast.success("Message successfully sent.");
+      setSent(true); // ← you can leave this or remove it if not used elsewhere
+    }
+  }, [state.succeeded]);
 
   return (
     <section id="contact" ref={sectionRef} className="py-24 relative">
@@ -91,13 +100,17 @@ export default function Contact() {
                 </h4>
                 <div className="flex space-x-4">
                   <a
-                    href="#"
+                    href="https://github.com/AlejandroP1028"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="p-3 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all text-gray-600 hover:text-gray-900 group"
                   >
                     <Github size={18} />
                   </a>
                   <a
-                    href="#"
+                    href="https://linkedin.com/in/aliprado"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="p-3 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all text-gray-600 hover:text-gray-900 group"
                   >
                     <Linkedin size={18} />
@@ -125,8 +138,8 @@ export default function Contact() {
                     type="text"
                     id="name"
                     name="name"
-                    value={formData.name}
-                    onChange={handleChange}
+                    // value={formData.name}
+                    // onChange={handleChange}
                     required
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400 outline-none transition-all bg-white"
                     placeholder="Your name"
@@ -144,11 +157,16 @@ export default function Contact() {
                     type="email"
                     id="email"
                     name="email"
-                    value={formData.email}
-                    onChange={handleChange}
+                    // value={formData.email}
+                    // onChange={handleChange}
                     required
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400 outline-none transition-all bg-white"
                     placeholder="your@email.com"
+                  />
+                  <ValidationError
+                    prefix="Email"
+                    field="email"
+                    errors={state.errors}
                   />
                 </div>
 
@@ -162,25 +180,39 @@ export default function Contact() {
                   <textarea
                     id="message"
                     name="message"
-                    value={formData.message}
-                    onChange={handleChange}
+                    // value={formData.message}
+                    // onChange={handleChange}
                     required
                     rows={5}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400 outline-none transition-all resize-none bg-white"
                     placeholder="Tell me about your project, or just say hi..."
                   />
+                  <ValidationError
+                    prefix="Message"
+                    field="message"
+                    errors={state.errors}
+                  />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200 flex items-center justify-center space-x-2 group"
+                  disabled={state.submitting || sent}
+                  className={`w-full px-6 py-3  text-white rounded-lg  flex items-center justify-center space-x-2 group ${
+                    sent
+                      ? "bg-gray-400"
+                      : "bg-gray-900 hover:bg-gray-800 transition-colors duration-200"
+                  }`}
                 >
-                  <span>Send Message</span>
+                  <span>
+                    {state.submitting ? "Sending..." : "Send Message"}
+                  </span>
                   <Send size={16} />
-                  <ArrowUpRight
-                    size={14}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  />
+                  {(!sent || !state.submitting) && (
+                    <ArrowUpRight
+                      size={14}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    />
+                  )}
                 </button>
               </form>
             </div>

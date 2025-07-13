@@ -46,7 +46,7 @@ const projects = [
       "Interactive data visualizations",
       "Real-time pattern analysis",
     ],
-    github: "#",
+    github: "https://github.com/AlejandroP1028/Thesis2_NextJs-Flask.git",
     featured: true,
   },
   {
@@ -65,7 +65,7 @@ const projects = [
       "Real-time process visualization",
       "Educational resource",
     ],
-    github: "#",
+    github: "https://github.com/AlejandroP1028/CPU-SCHEDULING_IMPLEMENTATION",
     featured: false,
   },
   {
@@ -82,7 +82,7 @@ const projects = [
       "Comprehensive documentation",
       "Version controlled",
     ],
-    github: "#",
+    github: "https://github.com/AlejandroP1028/Group-GCC_Vue-Component-Library",
     live: "group-gcc-vue-component-library.vercel.app",
     featured: false,
   },
@@ -162,7 +162,9 @@ export default function Projects() {
                       <div className="flex flex-wrap gap-3">
                         {project.github && (
                           <a
-                            href={project.github as string}
+                            href={project.github}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 text-sm group"
                           >
                             <Github size={16} className="mr-2" />
@@ -181,6 +183,8 @@ export default function Projects() {
                                 ? project.live
                                 : `https://${project.live}`
                             }
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm group"
                           >
                             <ExternalLink size={16} className="mr-2" />
@@ -277,6 +281,8 @@ export default function Projects() {
                   <div className="flex space-x-3">
                     <a
                       href={project.github}
+                       target="_blank"
+                            rel="noopener noreferrer"
                       className="text-gray-600 hover:text-gray-900 transition-colors p-1 rounded"
                     >
                       <Github size={16} />
@@ -288,6 +294,8 @@ export default function Projects() {
                             ? project.live
                             : `https://${project.live}`
                         }
+                         target="_blank"
+                            rel="noopener noreferrer"
                         className="text-gray-600 hover:text-gray-900 transition-colors p-1 rounded"
                       >
                         <ExternalLink size={16} />

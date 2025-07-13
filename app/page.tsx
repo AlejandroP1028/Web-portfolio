@@ -7,7 +7,7 @@ import Hero from "@/components/Hero";
 import About from "@/components/About";
 import Projects from "@/components/Projects";
 import TechStack from "@/components/TechStack";
-import Experiments from "@/components/Experiments";
+// import Experiments from "@/components/Experiments";
 import Contact from "@/components/Contact";
 import Navigation from "@/components/Navigation";
 import FloatingNav from "@/components/FloatingNav";
@@ -55,7 +55,7 @@ export default function Home() {
 
   return (
     <div className="bg-white text-gray-900 min-h-screen relative overflow-hidden">
-      <Navigation />
+      {/* <Navigation /> */}
       <FloatingNav />
       <main className="relative">
         <Hero />
@@ -65,8 +65,8 @@ export default function Home() {
         <Projects />
         <div className="section-line w-full h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
         <TechStack />
-        <div className="section-line w-full h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
-        <Experiments />
+        {/* <div className="section-line w-full h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+        <Experiments /> */}
         <div className="section-line w-full h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
         <DownloadCV />
         <div className="section-line w-full h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>

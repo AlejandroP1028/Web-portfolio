@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
@@ -12,16 +12,16 @@ const navItems = [
   { id: "#about", icon: User, label: "About" },
   { id: "#projects", icon: Code, label: "Projects" },
   { id: "#techstack", icon: Layers, label: "Tech" },
-  { id: "#experiments", icon: Beaker, label: "Labs" },
+  // { id: "#experiments", icon: Beaker, label: "Labs" },
   { id: "#cv", icon: Download, label: "CV", isDownload: false },
   { id: "#contact", icon: Mail, label: "Contact" },
 ];
 
 export default function FloatingNav() {
   const navRef = useRef<HTMLDivElement>(null);
-
+  const [activeSection, setActiveSection] = useState<string>("#about");
   useEffect(() => {
-    // Show floating nav when scrolling past hero
+    // Floating nav animation
     ScrollTrigger.create({
       trigger: "#hero",
       start: "bottom top",
@@ -30,12 +30,7 @@ export default function FloatingNav() {
         gsap.fromTo(
           navRef.current,
           { y: 100, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.6,
-            ease: "back.out(1.7)",
-          }
+          { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.7)" }
         );
       },
       onLeaveBack: () => {
@@ -46,6 +41,17 @@ export default function FloatingNav() {
           ease: "power2.inOut",
         });
       },
+    });
+
+    // Section watchers
+    navItems.forEach((item) => {
+      ScrollTrigger.create({
+        trigger: item.id,
+        start: "top center",
+        end: "bottom center",
+        onEnter: () => setActiveSection(item.id),
+        onEnterBack: () => setActiveSection(item.id),
+      });
     });
 
     return () => {
@@ -59,7 +65,7 @@ export default function FloatingNav() {
 
     gsap.to(window, {
       duration: 1,
-      scrollTo: sectionId,
+      scrollTo: { y: sectionId, offsetY: -50 },
       ease: "power2.inOut",
     });
   };
@@ -79,13 +85,28 @@ export default function FloatingNav() {
                   ? window.open("/alejandro-prado-cv.pdf", "_blank")
                   : scrollToSection(item.id)
               }
-              className="group flex flex-col items-center space-y-1 p-2 w-20 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              className={`group flex flex-col items-center space-y-1 p-2 md:w-20 rounded-lg transition-colors duration-200 ${
+                activeSection === item.id
+                  ? "bg-gray-200 text-gray-900"
+                  : "hover:bg-gray-100"
+              }`}
             >
               <item.icon
                 size={18}
-                className="text-gray-600 group-hover:text-gray-900 transition-colors"
+                className={`transition-colors ${
+                  activeSection === item.id
+                    ? "text-gray-900"
+                    : "text-gray-600 group-hover:text-gray-900"
+                }`}
               />
-              <span className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors">
+
+              <span
+                className={`text-xs transition-colors ${
+                  activeSection === item.id
+                    ? "text-gray-700"
+                    : "text-gray-500 group-hover:text-gray-700"
+                }`}
+              >
                 {item.label}
               </span>
             </button>

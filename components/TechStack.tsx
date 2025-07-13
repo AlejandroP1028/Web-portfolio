@@ -4,14 +4,8 @@ import { useRef } from "react";
 
 const techStack = {
   Frontend: {
-    primary: ["JavaScript", "TypeScript", "React", "Next.js", "Vue.js"],
-    secondary: [
-      "HTML/CSS",
-      "Tailwind CSS",
-      "Framer Motion",
-      "GSAP",
-      "shadcn/ui",
-    ],
+    primary: ["JavaScript", "TypeScript", "React", "Next.js", "Tailwind CSS"],
+    secondary: ["HTML/CSS", "Framer Motion", "GSAP", "shadcn/ui", "Vue.js"],
     description: "Building interactive and responsive user interfaces",
   },
   Backend: {
@@ -26,7 +20,7 @@ const techStack = {
   },
   Tools: {
     primary: ["Git", "GitHub", "VS Code", "Vercel"],
-    secondary: ["Figma", "Postman", "Linear Regression"],
+    secondary: ["Figma", "Postman"],
     description: "Development workflow and productivity tools",
   },
 };
