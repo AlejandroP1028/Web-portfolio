@@ -20,14 +20,19 @@ export const metadata: Metadata = {
     "Portfolio",
     "Web Developer",
   ],
-  authors: [{ name: "Alejandro Prado", url: "https://alejandroprado.dev" }],
+  authors: [
+    {
+      name: "Alejandro Prado",
+      url: "https://alejandro-portfolio-zeta.vercel.app/",
+    },
+  ],
   creator: "Alejandro Prado",
-  metadataBase: new URL("https://alejandroprado.dev"),
+  metadataBase: new URL("https://alejandro-portfolio-zeta.vercel.app/"),
   openGraph: {
     title: "Alejandro Prado | Full-Stack Web Developer",
     description:
       "Explore my portfolio showcasing modern web apps, UI design, and real-world problem solving.",
-    url: "https://alejandroprado.dev",
+    url: "https://alejandro-portfolio-zeta.vercel.app/",
     siteName: "Alejandro Prado Portfolio",
     type: "website",
     locale: "en_PH",
@@ -37,7 +42,6 @@ export const metadata: Metadata = {
     title: "Alejandro Prado | Full-Stack Web Developer",
     description:
       "Portfolio of Alejandro Prado — building modern web applications with React, Next.js, and more.",
-    creator: "@yourhandle", // optional: replace or remove
   },
 };
 
