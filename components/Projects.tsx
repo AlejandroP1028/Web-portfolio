@@ -19,6 +19,7 @@ const projects = [
       "TypeScript",
       "Socket.IO",
       "Prisma",
+      "shadcn",
       "Tailwind CSS",
       "Zustand",
     ],
@@ -40,7 +41,16 @@ const projects = [
     solution:
       "Interactive dashboard with ML model integration and real-time data visualization",
     myRole: "Frontend development, data visualization, ML model integration",
-    tech: ["Next.js", "React", "Flask", "Firebase", "Chart.js", "Tailwind CSS"],
+    tech: [
+      "Next.js",
+      "React",
+      "Flask",
+      "Firebase",
+      "Chart.js",
+
+      "shadcn",
+      "Tailwind CSS",
+    ],
     highlights: [
       "70% user engagement rate",
       "Interactive data visualizations",
@@ -59,7 +69,7 @@ const projects = [
       "Interactive simulator with real-time visualizations and algorithm comparisons",
     myRole:
       "Frontend development, algorithm implementation, visualization design",
-    tech: ["Vue.js", "TypeScript", "Canvas API", "CSS Animations"],
+    tech: ["Vue.js", "TypeScript", "CSS Animations"],
     highlights: [
       "Multiple algorithm support",
       "Real-time process visualization",
@@ -76,7 +86,7 @@ const projects = [
     solution:
       "Modular component library with documentation and version control",
     myRole: "Component architecture, documentation, API design",
-    tech: ["Vue.js", "Storybook", "CSS", "Documentation"],
+    tech: ["Vue.js", "CSS", "Documentation"],
     highlights: [
       "30% faster development",
       "Comprehensive documentation",
@@ -281,8 +291,8 @@ export default function Projects() {
                   <div className="flex space-x-3">
                     <a
                       href={project.github}
-                       target="_blank"
-                            rel="noopener noreferrer"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-gray-600 hover:text-gray-900 transition-colors p-1 rounded"
                     >
                       <Github size={16} />
@@ -294,8 +304,8 @@ export default function Projects() {
                             ? project.live
                             : `https://${project.live}`
                         }
-                         target="_blank"
-                            rel="noopener noreferrer"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="text-gray-600 hover:text-gray-900 transition-colors p-1 rounded"
                       >
                         <ExternalLink size={16} />
