@@ -7,7 +7,6 @@ import {
   ArrowUpRight,
   MapPin,
   Mail,
-  Phone,
 } from "lucide-react";
 import { useForm, ValidationError } from "@formspree/react";
 
@@ -49,10 +48,6 @@ export default function DownloadCV() {
             <li className="flex items-center gap-2">
               <Mail size={14} />
               alejandroprado885@gmail.com
-            </li>
-            <li className="flex items-center gap-2">
-              <Phone size={14} />
-              09939270565
             </li>
           </ul>
         </div>
