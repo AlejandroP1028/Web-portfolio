@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { THEME_BOOT } from "@/components/landing/theme";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -51,9 +52,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <Toaster position="top-right" />
-      <body className={poppins.className}>{children}</body>
+    // suppressHydrationWarning: THEME_BOOT may set data-theme on <html> before React hydrates
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
+      </head>
+      <body className={poppins.className}>
+        <Toaster position="top-right" />
+        {children}
+      </body>
     </html>
   );
 }

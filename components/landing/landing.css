@@ -1,0 +1,643 @@
+/* Landing page and the three side pages. Plain CSS: the tokens need light and dark
+   values, which the Tailwind setup in this repo can't express (see CLAUDE.md). */
+.landing,
+.side-page {
+  --paper: #f4f4f1;
+  --ink: #16181b;
+  --muted: #5e636b;
+  --line: #d9dad4;
+  --work: #3e63dd;
+  --work-ink: #2f4fc4;
+  --work-on: #ffffff;
+  --fun: #f76b15;
+  --fun-ink: #b44a0a;
+  --fun-on: #1a0d04;
+  --learn-ink: #0b7a6d;
+  --pill-bg: #17181b;
+  --pill-text: #f2f3f5;
+  --pill-muted: #a3a8b3;
+  --screen-bar: #ffffff;
+  --sans: var(--font-landing-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: var(--font-landing-mono), Consolas, "Cascadia Mono", monospace;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  font-family: var(--sans);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+/* Dark: follows the system unless the theme picker set <html data-theme> (see ThemeToggle).
+   The same values twice, so an explicit choice wins either way. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) :is(.landing, .side-page) {
+    --paper: #121315;
+    --ink: #e9eaec;
+    --muted: #a0a5ad;
+    --line: #2b2d31;
+    --work: #5b7cf0;
+    --work-ink: #9db0ff;
+    --work-on: #0c1433;
+    --fun: #ff8a3d;
+    --fun-ink: #ffad73;
+    --learn-ink: #4fd1bf;
+    --pill-bg: #2b2d33;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] :is(.landing, .side-page) {
+  --paper: #121315;
+  --ink: #e9eaec;
+  --muted: #a0a5ad;
+  --line: #2b2d31;
+  --work: #5b7cf0;
+  --work-ink: #9db0ff;
+  --work-on: #0c1433;
+  --fun: #ff8a3d;
+  --fun-ink: #ffad73;
+  --learn-ink: #4fd1bf;
+  --pill-bg: #2b2d33;
+  color-scheme: dark;
+}
+
+/* the theme picker: Light / Dark, top right of every page */
+/* the theme switch: one hand-drawn sun or moon, no box. A sketched circle draws round it
+   on hover or focus; a new icon draws itself in after a switch. */
+.theme-toggle {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  z-index: 60; /* above the side colour while it grows, so it never flickers between pages */
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.theme-toggle svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1 1;
+}
+.theme-toggle .sketch {
+  width: 24px;
+  height: 24px;
+  stroke-width: 1.6;
+  stroke-dashoffset: 0;
+  animation: theme-draw 0.6s cubic-bezier(0.45, 0, 0.25, 1) both;
+}
+.theme-toggle .loop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  stroke-width: 1.4;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 0.2s ease-in;
+}
+.theme-toggle:hover .loop,
+.theme-toggle:focus-visible .loop {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.45s cubic-bezier(0.45, 0, 0.25, 1);
+}
+.theme-toggle:focus-visible {
+  outline: none; /* the drawn circle is the focus ring */
+}
+/* the theme switch's view transition: no cross-fade, the new theme's circle (set from
+   ThemeToggle) simply covers the old page */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+@keyframes theme-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+.landing {
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+}
+.landing a {
+  color: inherit;
+}
+.landing a:focus-visible,
+.side-page a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+  border-radius: 14px;
+}
+.landing .wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(40px, 8vh, 96px) max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px));
+  display: grid;
+  gap: clamp(28px, 5vh, 56px);
+  position: relative;
+  z-index: 1;
+}
+
+.landing .intro,
+.landing .links {
+  position: relative;
+  z-index: 1;
+}
+.landing .intro {
+  display: grid;
+  gap: 14px;
+  max-width: 46rem;
+}
+.landing .intro h1 {
+  margin: 0;
+  font-weight: 600;
+  font-size: clamp(2.6rem, 7vw, 5rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  position: relative;
+}
+/* a credit for the handwriting, written by hand next to the pointer while it is on the
+   headline: the words write in left to right, then a pen loop circles them */
+.landing .intro .tip {
+  position: absolute;
+  left: 0;
+  top: 0; /* moved by transform, trailing the pointer (Landing's followTip) */
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.landing .intro .tipbox {
+  position: relative;
+  display: block;
+  translate: 18px calc(-100% - 16px);
+  rotate: -3deg;
+  padding: 16px 26px 14px;
+  border-radius: 50%;
+  background: var(--paper); /* a patch of paper so it reads over the ink below */
+  color: var(--ink);
+  font: 400 1.5rem/1 var(--font-landing-hand), cursive;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.landing .intro .tip .txt {
+  display: block;
+  clip-path: inset(-20% 100% -20% 0);
+  transition: clip-path 0s 0.15s; /* reset once hidden */
+}
+.landing .intro .tip .loop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 0s 0.15s;
+}
+.landing:not(.is-intro) .intro h1:has(.mark:hover) .tip {
+  opacity: 1;
+}
+.landing:not(.is-intro) .intro h1:has(.mark:hover) .tip .txt {
+  clip-path: inset(-20% -5% -20% 0);
+  transition: clip-path 0.55s linear;
+}
+.landing:not(.is-intro) .intro h1:has(.mark:hover) .tip .loop {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.5s cubic-bezier(0.45, 0, 0.25, 1) 0.45s;
+}
+.landing .intro p {
+  margin: 0;
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  color: var(--muted);
+  max-width: 34ch;
+  text-wrap: balance;
+}
+.landing .pick {
+  font: 600 0.8rem/1 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* the row: one canvas behind three links */
+.landing .row {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+/* the 3D layer covers the viewport, behind the page content */
+.landing .scene {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.landing.gl-ready .scene {
+  opacity: 1;
+}
+.landing .obj {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  text-decoration: none;
+  padding: 8px;
+  border-radius: 18px;
+  animation: landing-enter 0.6s var(--ease) both;
+}
+.landing .obj[data-side="learning"] {
+  animation-delay: 0.15s;
+}
+.landing .obj[data-side="fun"] {
+  animation-delay: 0.3s;
+}
+.landing .stage {
+  position: relative;
+  width: 100%;
+  height: clamp(230px, 26vw, 330px);
+  display: grid;
+  place-items: center;
+}
+.landing .lab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 0.78rem/1 var(--mono);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color 0.2s ease;
+}
+.landing .lab i {
+  font-style: normal;
+  transform: translateX(-4px);
+  opacity: 0;
+  transition: transform 0.25s var(--ease), opacity 0.2s ease;
+}
+.landing .obj:hover .lab i,
+.landing .obj:focus-visible .lab i {
+  transform: none;
+  opacity: 1;
+}
+.landing .obj[data-side="work"]:is(:hover, :focus-visible) .lab {
+  color: var(--work-ink);
+}
+.landing .obj[data-side="fun"]:is(:hover, :focus-visible) .lab {
+  color: var(--fun-ink);
+}
+.landing .obj[data-side="learning"]:is(:hover, :focus-visible) .lab {
+  color: var(--learn-ink);
+}
+
+/* flat drawings, only when 3D is unavailable */
+.landing .fallback {
+  display: none;
+  width: min(88%, 300px);
+  height: auto;
+}
+.landing.gl-none .fallback {
+  display: block;
+}
+.landing .fallback .fill {
+  fill: var(--paper);
+}
+.landing .obj[data-side="work"]:hover .fallback .scr {
+  fill: var(--work);
+}
+.landing .obj[data-side="fun"]:hover .fallback .ring {
+  stroke: var(--fun);
+}
+
+/* the Agent Pill */
+.landing .pillhold {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+}
+.landing .pillbox {
+  --c: var(--pill-muted);
+  position: relative;
+  width: 162px;
+  height: 28px;
+  border-radius: 14px;
+  background: var(--pill-bg);
+  color: var(--pill-text);
+  font: 12px/1 var(--mono);
+  font-variant-ligatures: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+  transition: width 0.32s var(--ease), height 0.32s var(--ease), border-radius 0.32s var(--ease);
+}
+.landing .obj[data-side="learning"]:is(:hover, :focus-visible) .pillbox,
+.landing .pillbox.open {
+  width: min(300px, 92%);
+  height: 200px;
+  border-radius: 16px;
+}
+.landing .pill-head {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px 0 10px;
+  white-space: nowrap;
+}
+.landing .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c);
+  flex: none;
+}
+.landing .state {
+  font-weight: 600;
+  color: var(--c);
+  animation: landing-rise 0.16s ease-out;
+}
+.landing .time {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--pill-muted);
+  font-variant-numeric: tabular-nums;
+}
+.landing .s-thinking { --c: #8ab4ff; }
+.landing .s-tool { --c: #c3b1ff; }
+.landing .s-waiting { --c: #ffb454; }
+.landing .s-done { --c: #6fd69a; }
+.landing .s-thinking .dot,
+.landing .s-tool .dot {
+  animation: landing-pulse 1.4s ease-in-out infinite;
+}
+.landing .s-done .dot {
+  animation: landing-pop 0.24s var(--ease);
+}
+/* the pill plus its effects, sized to the pill so they line up whatever its width */
+.landing .pillwrap {
+  position: relative;
+  display: inline-grid;
+}
+.landing .ringwrap {
+  position: absolute;
+  inset: -4px;
+  border-radius: 18px;
+  pointer-events: none;
+  opacity: 0;
+}
+/* Done: the bead that runs round the rim, and the drops thrown off at the end */
+.landing .bead,
+.landing .drop {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #6fd69a;
+  pointer-events: none;
+  opacity: 0;
+}
+.landing .bead {
+  left: -2.5px;
+  top: -2.5px;
+  box-shadow: 0 0 6px rgba(111, 214, 154, 0.9);
+}
+.landing .drop {
+  left: 50%;
+  top: 50%;
+  margin: -2.5px 0 0 -2.5px;
+}
+.landing .ringwrap.on {
+  opacity: 1;
+  box-shadow: 0 0 0 2px #ffb454;
+  animation: landing-ring 1.6s ease-in-out infinite;
+}
+.landing .obj[data-side="learning"]:is(:hover, :focus-visible) .ringwrap {
+  display: none;
+}
+.landing .log {
+  list-style: none;
+  margin: 0;
+  padding: 6px 14px 12px;
+  display: grid;
+  gap: 7px;
+  font-size: 11.5px;
+  color: var(--pill-muted);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.landing .obj[data-side="learning"]:is(:hover, :focus-visible) .log,
+.landing .pillbox.open .log {
+  opacity: 1;
+  transition-delay: 0.12s;
+}
+.landing .log li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.landing .log .you { color: var(--pill-text); }
+.landing .log .ask { color: #ffb454; }
+.landing .log .ok { color: #6fd69a; }
+
+.landing .links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  font-weight: 500;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+}
+.landing .links a {
+  text-decoration: none;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+  transition: border-color 0.2s ease;
+}
+.landing .links a:hover {
+  border-color: var(--ink);
+}
+
+/* the grow-from-the-object transition, and the side pages it lands on */
+.landing .wipe {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: none;
+}
+.landing .wipe.on {
+  display: block;
+}
+.landing .wipe,
+.side-page {
+  background: var(--bgc);
+  color: var(--onc);
+}
+/* first frames of the intro and of the way back (set before paint by the boot script) */
+.landing .sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.landing.is-intro .typed {
+  visibility: hidden;
+}
+/* the headline, a handwriting trace (headlineGlyphs.ts). Its width is set in em from the
+   trace, so it scales with the h1's font-size like text would; on a narrow screen it shrinks
+   to fit. Each stroke is a round pen line; the intro draws them one by one. */
+.landing .mark {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.landing .mark .st {
+  fill: none;
+  stroke: var(--ink);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.landing.is-intro .intro p,
+.landing.is-intro .pick,
+.landing.is-intro .lab,
+.landing.is-intro .links {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.landing.is-intro .pillbox {
+  opacity: 0;
+  transition: none;
+}
+/* the pill flies over the other objects during the intro; don't let it catch the pointer */
+.landing.is-intro .pillhold {
+  pointer-events: none;
+  z-index: 2;
+}
+/* the entrance only plays when nothing else introduces the page */
+.landing.is-intro .obj,
+.landing.settled .obj {
+  animation: none;
+}
+/* on the way back the colour shrinks into the 3D object, so it must be there at full strength */
+.landing.is-returning .scene {
+  transition: none;
+}
+.landing.is-returning .wipe {
+  display: block;
+}
+.landing.ret-work .wipe { --bgc: var(--work); }
+.landing.ret-learning .wipe { --bgc: var(--pill-bg); }
+.landing.ret-fun .wipe { --bgc: var(--fun); }
+
+[data-side="work"].wipe,
+.side-page[data-side="work"] {
+  --bgc: var(--work);
+  --onc: var(--work-on);
+}
+[data-side="learning"].wipe,
+.side-page[data-side="learning"] {
+  --bgc: var(--pill-bg);
+  --onc: var(--pill-text);
+}
+[data-side="fun"].wipe,
+.side-page[data-side="fun"] {
+  --bgc: var(--fun);
+  --onc: var(--fun-on);
+}
+
+.side-page {
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+  padding: max(24px, env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) max(24px, env(safe-area-inset-left, 0px));
+}
+.side-page .side-inner {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  display: grid;
+  gap: 18px;
+  animation: landing-enter 0.3s var(--ease) both;
+}
+.side-page .eyebrow {
+  margin: 0;
+  font: 600 0.8rem/1 var(--mono);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+.side-page h1 {
+  margin: 0;
+  font-weight: 600;
+  font-size: clamp(3rem, 10vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+.side-page p {
+  margin: 0;
+  font-size: 1.2rem;
+  max-width: 40ch;
+}
+.side-page .back {
+  justify-self: start;
+  margin-top: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  color: inherit;
+  border: 1.5px solid currentColor;
+  border-radius: 10px;
+  padding: 12px 18px;
+  min-height: 44px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+}
+
+@keyframes landing-enter { from { opacity: 0; transform: translateY(8px); } }
+@keyframes landing-rise { from { transform: translateY(4px); opacity: 0; } }
+@keyframes landing-pulse { 50% { opacity: 0.35; } }
+@keyframes landing-pop { 50% { transform: scale(1.3); } }
+@keyframes landing-ring { 50% { opacity: 0.5; transform: scale(1.06); } }
+
+@media (max-width: 720px) {
+  .landing .row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .landing .stage {
+    height: 240px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle .loop,
+  .theme-toggle .sketch {
+    transition: none !important;
+    animation: none !important;
+  }
+  .landing *,
+  .side-page * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
