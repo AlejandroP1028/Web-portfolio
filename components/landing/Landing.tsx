@@ -136,7 +136,12 @@ export default function Landing() {
     // The pill goes to whatever it is working on. Points are viewport px, turned into an
     // offset from the pill's own slot in the row and kept on screen (phones stack the row).
     const slot = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-    const to = (px: number, py: number) => ({ x: px - slot.x, y: gsap.utils.clamp(40, innerHeight - 40, py) - slot.y });
+    // x keeps the whole pill on screen (232px, stretched 1.14x in flight): on a phone,
+    // "under the pen" runs past the edge
+    const to = (px: number, py: number) => ({
+      x: gsap.utils.clamp(Math.min(140, innerWidth / 2), Math.max(innerWidth - 140, innerWidth / 2), px) - slot.x,
+      y: gsap.utils.clamp(40, innerHeight - 40, py) - slot.y,
+    });
     const h1 = typed.parentElement!.getBoundingClientRect();
     // just under the headline, trailing the letter being written (like a cursor label)
     const under = (x: number) => to(x + 100, h1.bottom + 20);

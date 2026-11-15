@@ -130,6 +130,7 @@
 
 .landing {
   min-height: 100vh;
+  min-height: 100svh; /* phones: the height with the browser bars showing */
   background: var(--paper);
   color: var(--ink);
 }
@@ -292,8 +293,8 @@
 .landing .scene {
   position: fixed;
   inset: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
   z-index: 0;
   opacity: 0;
@@ -343,18 +344,17 @@
   opacity: 0;
   transition: transform 0.25s var(--ease), opacity 0.2s ease;
 }
-.landing .obj:hover .lab i,
 .landing .obj:focus-visible .lab i {
   transform: none;
   opacity: 1;
 }
-.landing .obj[data-side="work"]:is(:hover, :focus-visible) .lab {
+.landing .obj[data-side="work"]:focus-visible .lab {
   color: var(--work-ink);
 }
-.landing .obj[data-side="fun"]:is(:hover, :focus-visible) .lab {
+.landing .obj[data-side="fun"]:focus-visible .lab {
   color: var(--fun-ink);
 }
-.landing .obj[data-side="learning"]:is(:hover, :focus-visible) .lab {
+.landing .obj[data-side="learning"]:focus-visible .lab {
   color: var(--learn-ink);
 }
 
@@ -369,12 +369,6 @@
 }
 .landing .fallback .fill {
   fill: var(--paper);
-}
-.landing .obj[data-side="work"]:hover .fallback .scr {
-  fill: var(--work);
-}
-.landing .obj[data-side="fun"]:hover .fallback .ring {
-  stroke: var(--fun);
 }
 
 /* the Agent Pill */
@@ -399,7 +393,7 @@
   overflow: hidden;
   transition: width 0.32s var(--ease), height 0.32s var(--ease), border-radius 0.32s var(--ease);
 }
-.landing .obj[data-side="learning"]:is(:hover, :focus-visible) .pillbox,
+.landing .obj[data-side="learning"]:focus-visible .pillbox,
 .landing .pillbox.open {
   width: min(300px, 100vw - 32px); /* a fixed width: a % here followed the label's width */
   height: min(200px, var(--stage-h, 400px) - 24px);
@@ -480,7 +474,7 @@
   box-shadow: 0 0 0 2px #ffb454;
   animation: landing-ring 1.6s ease-in-out infinite;
 }
-.landing .obj[data-side="learning"]:is(:hover, :focus-visible) .ringwrap {
+.landing .obj[data-side="learning"]:focus-visible .ringwrap {
   display: none;
 }
 .landing .log {
@@ -494,7 +488,7 @@
   opacity: 0;
   transition: opacity 0.2s ease;
 }
-.landing .obj[data-side="learning"]:is(:hover, :focus-visible) .log,
+.landing .obj[data-side="learning"]:focus-visible .log,
 .landing .pillbox.open .log {
   opacity: 1;
   transition-delay: 0.12s;
@@ -619,6 +613,7 @@
 
 .side-page {
   min-height: 100vh;
+  min-height: 100svh; /* phones: the height with the browser bars showing */
   display: grid;
   align-content: center;
   padding: max(24px, env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) max(24px, env(safe-area-inset-left, 0px));
@@ -671,13 +666,86 @@
 @keyframes landing-pop { 50% { transform: scale(1.3); } }
 @keyframes landing-ring { 50% { opacity: 0.5; transform: scale(1.06); } }
 
-@media (max-width: 720px) {
-  .landing .row {
-    grid-template-columns: 1fr;
-    gap: 8px;
+/* hover looks only where there is a real pointer: a tap would leave them stuck on (and the
+   pill panel open) when you come back from a side page */
+@media (hover: hover) {
+  .landing .obj:hover .lab i {
+    transform: none;
+    opacity: 1;
   }
+  .landing .obj[data-side="work"]:hover .lab { color: var(--work-ink); }
+  .landing .obj[data-side="fun"]:hover .lab { color: var(--fun-ink); }
+  .landing .obj[data-side="learning"]:hover .lab { color: var(--learn-ink); }
+  .landing .obj[data-side="work"]:hover .fallback .scr { fill: var(--work); }
+  .landing .obj[data-side="fun"]:hover .fallback .ring { stroke: var(--fun); }
+  .landing .obj[data-side="learning"]:hover .pillbox {
+    width: min(300px, 100vw - 32px);
+    height: min(200px, var(--stage-h, 400px) - 24px);
+    border-radius: 16px;
+  }
+  .landing .obj[data-side="learning"]:hover .ringwrap { display: none; }
+  .landing .obj[data-side="learning"]:hover .log {
+    opacity: 1;
+    transition-delay: 0.12s;
+  }
+}
+/* touch: no hover to reveal the arrows, so they always show the objects are links */
+@media (hover: none) {
+  .landing .lab i {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@media (max-width: 720px) {
+  .landing .wrap {
+    /* clear the theme switch (44px at 12px from the top) */
+    padding-top: max(68px, env(safe-area-inset-top, 0px) + 56px);
+    gap: 24px;
+  }
+  /* all three on one screen: laptop and controller side by side, the pill centred under them */
+  .landing .row {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "work fun" "learning learning";
+    gap: 4px 8px;
+  }
+  .landing .obj {
+    padding: 4px;
+    gap: 10px;
+  }
+  .landing .obj[data-side="work"] { grid-area: work; }
+  .landing .obj[data-side="fun"] { grid-area: fun; }
+  .landing .obj[data-side="learning"] { grid-area: learning; }
   .landing .stage {
-    --stage-h: 240px;
+    --stage-h: clamp(130px, 40vw, 220px);
+  }
+  .landing .obj[data-side="learning"] .stage {
+    --stage-h: 96px;
+  }
+  .landing .links {
+    gap: 4px 24px;
+  }
+  .landing .links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  /* the credit goes under the heart instead of beside it, smaller, so it stays on screen */
+  .landing .intro .tip {
+    left: auto !important;
+    right: 0;
+    top: 100% !important;
+  }
+  .landing .intro .tipbox {
+    translate: 0 -6px;
+    font-size: 1.1rem;
+    padding: 12px 20px 10px;
+  }
+}
+/* phones on their side: the row of three fits the short screen */
+@media (max-height: 500px) and (orientation: landscape) {
+  .landing .stage {
+    --stage-h: 170px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
