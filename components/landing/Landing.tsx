@@ -3,11 +3,26 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { flushSync } from "react-dom";
-import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type PointerEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import gsap from "gsap";
 import AgentPill, { type PillOverride } from "./AgentPill";
 import ThemeToggle from "./ThemeToggle";
-import { HEADLINE, PEN as PEN_WIDTH, STROKES, UNITS_PER_EM, VIEWBOX } from "./headlineGlyphs";
+import { HEADLINE, HEART, PEN as PEN_WIDTH, SMILE, SMILE_BOX, STROKES, UNITS_PER_EM, VIEWBOX } from "./headlineGlyphs";
+import * as TIP from "./tipGlyphs";
+
+// the credit is written like the headline: stroke after stroke, the pen time shared out by
+// length. [delay, duration] per stroke, in seconds (CSS runs it when the tooltip shows).
+const TIP_PEN_TIME = 1.1;
+const TIP_TIMES = (() => {
+  const total = TIP.LENS.reduce((a, b) => a + b, 0);
+  let t = 0;
+  return TIP.LENS.map((l) => {
+    const d = Math.max(0.04, (TIP_PEN_TIME * l) / total);
+    t += d;
+    return [t - d, d];
+  });
+})();
+const TIP_WRITTEN = TIP_TIMES[TIP_TIMES.length - 1].reduce((a, b) => a + b);
 import { sans, mono, hand } from "./fonts";
 import type { AnimState, Side, Target } from "./scene";
 import "./landing.css";
@@ -270,25 +285,38 @@ export default function Landing() {
     return gsap.to(p, { v: to, duration, ease, onUpdate: paint }).then();
   };
 
-  // the credit tooltip trails the pointer over the handwriting, a beat behind it (CSS shows
-  // it on hover). On entering it starts at the pointer instead of sliding in from a corner.
-  const tipTo = useRef<{ x: gsap.QuickToFunc; y: gsap.QuickToFunc } | null>(null);
-  const followTip = (e: PointerEvent<SVGSVGElement>) => {
+  // The smile is a button: a click rubs it out with the pen and draws her heart in its place,
+  // the heart beats once, then the credit writes itself beside it (CSS, on h1.thanks).
+  // Another click takes it back.
+  const [thanks, setThanks] = useState(false);
+  const heartTl = useRef<gsap.core.Timeline | null>(null);
+  const toggleThanks = (e: MouseEvent<HTMLButtonElement>) => {
     const h1 = e.currentTarget.parentElement!;
-    const tip = h1.querySelector(".tip")!;
-    const r = h1.getBoundingClientRect();
-    const x = e.clientX - r.left;
-    const y = e.clientY - r.top;
-    if (e.type === "pointerenter" || !tipTo.current) {
-      gsap.set(tip, { x, y });
-      tipTo.current = {
-        x: gsap.quickTo(tip, "x", { duration: 0.6, ease: "power3.out" }),
-        y: gsap.quickTo(tip, "y", { duration: 0.6, ease: "power3.out" }),
-      };
-      return;
+    const smile = Array.from(h1.querySelectorAll<SVGPathElement>(".mark .smile"));
+    const heart = h1.querySelector<SVGPathElement>(".mark .heart")!;
+    const sl = smile.map((p) => p.getTotalLength());
+    const hl = heart.getTotalLength();
+    const dash = (l: number) => `${l} ${l + PEN_WIDTH * 2}`;
+    heartTl.current?.kill();
+    const tl = gsap.timeline();
+    if (!thanks) {
+      tl.set(smile, { strokeDasharray: (i: number) => dash(sl[i]) })
+        .to(smile, { strokeDashoffset: (i: number) => sl[i], duration: 0.22, ease: "power1.in", stagger: { each: 0.06, from: "end" } })
+        .set(smile, { strokeOpacity: 0 })
+        .set(heart, { strokeDasharray: dash(hl), strokeDashoffset: hl, strokeOpacity: 1, scale: 1, transformOrigin: "50% 50%" })
+        .to(heart, { strokeDashoffset: 0, duration: 0.75, ease: "power1.inOut" })
+        .to(heart, { scale: 1.16, duration: 0.13, yoyo: true, repeat: 1, ease: "power2.out" })
+        .call(() => setThanks(true));
+    } else {
+      setThanks(false);
+      tl.set(heart, { strokeDasharray: dash(hl) })
+        .to(heart, { strokeDashoffset: hl, duration: 0.4, ease: "power1.in" })
+        .set(heart, { strokeOpacity: 0 })
+        .set(smile, { strokeOpacity: 1 })
+        .to(smile, { strokeDashoffset: 0, duration: 0.22, ease: "power1.out", stagger: 0.06 });
     }
-    tipTo.current.x(x);
-    tipTo.current.y(y);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) tl.progress(1);
+    heartTl.current = tl;
   };
 
   const hoverProps = (side: Side) => ({
@@ -339,20 +367,59 @@ export default function Landing() {
       <ThemeToggle />
       <main className="wrap">
         <header className="intro">
-          <h1>
+          <h1 className={thanks ? "thanks" : undefined}>
             <span className="sr">{NAME}</span>
-            <svg className="typed mark" onPointerEnter={followTip} onPointerMove={followTip} viewBox={`0 0 ${VIEWBOX.width} ${VIEWBOX.height}`}
-              style={{ width: `${VIEWBOX.width / UNITS_PER_EM}em` }} aria-hidden="true">
-              {STROKES.map((d, i) => <path key={i} className="st" d={d} strokeWidth={PEN_WIDTH} />)}
-            </svg>
-            {/* .tip follows the pointer (GSAP moves it); .tipbox sits up and to the right of it */}
-            <span className="tip" aria-hidden="true">
-              <span className="tipbox">
-                <span className="txt">special thanks to my girlfriend</span>
-                {/* drawn for the tooltip's wide shape, so the stroke isn't stretched */}
-                <svg className="loop" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true">
-                  <path pathLength={1} d="M30 12C90 2 230 0 284 14c22 8 14 32-40 40-70 9-170 8-222-4C-6 42 2 18 40 9c40-9 110-10 160-6" />
-                </svg>
+            {/* the box of the handwriting: the smile button and the credit are placed in it */}
+            <span className="hand">
+              <svg className="typed mark" viewBox={`0 0 ${VIEWBOX.width} ${VIEWBOX.height}`}
+                style={{ width: `${VIEWBOX.width / UNITS_PER_EM}em` }} aria-hidden="true">
+                {STROKES.map((d, i) => (
+                  <path key={i} className={i >= STROKES.length - SMILE ? "st smile" : "st"} d={d} strokeWidth={PEN_WIDTH} />
+                ))}
+                <path className="heart" d={HEART} strokeWidth={PEN_WIDTH} />
+              </svg>
+              <button
+                type="button"
+                className="smile-btn"
+                aria-pressed={thanks}
+                aria-label="A thank-you"
+                onClick={toggleThanks}
+                style={{
+                  left: `${(SMILE_BOX.x / VIEWBOX.width) * 100}%`,
+                  top: `${(SMILE_BOX.y / VIEWBOX.height) * 100}%`,
+                  width: `${(SMILE_BOX.w / VIEWBOX.width) * 100}%`,
+                  height: `${(SMILE_BOX.h / VIEWBOX.height) * 100}%`,
+                }}
+              />
+              {/* the credit, just right of the heart */}
+              <span
+                className="tip"
+                aria-live="polite"
+                style={{ left: `${((SMILE_BOX.x + SMILE_BOX.w) / VIEWBOX.width) * 100}%`, top: `${((SMILE_BOX.y + SMILE_BOX.h / 2) / VIEWBOX.height) * 100}%` }}
+              >
+                <span className="tipbox" style={{ "--written": `${TIP_WRITTEN}s` } as CSSProperties}>
+                  <svg
+                    className="txt"
+                    viewBox={`0 0 ${TIP.VIEWBOX.width} ${TIP.VIEWBOX.height}`}
+                    style={{ width: `${TIP.VIEWBOX.width / TIP.UNITS_PER_EM}em`, height: `${TIP.VIEWBOX.height / TIP.UNITS_PER_EM}em` }}
+                  >
+                    <title>special thanks to my girlfriend</title>
+                    {TIP.STROKES.map((d, i) => (
+                      <path
+                        key={i}
+                        className={d.endsWith("h0.01") ? "dot" : undefined}
+                        d={d}
+                        pathLength={1}
+                        strokeWidth={TIP.PEN}
+                        style={{ "--t": `${TIP_TIMES[i][0]}s`, "--d": `${TIP_TIMES[i][1]}s` } as CSSProperties}
+                      />
+                    ))}
+                  </svg>
+                  {/* drawn for the tooltip's wide shape, so the stroke isn't stretched */}
+                  <svg className="loop" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true">
+                    <path pathLength={1} d="M30 12C90 2 230 0 284 14c22 8 14 32-40 40-70 9-170 8-222-4C-6 42 2 18 40 9c40-9 110-10 160-6" />
+                  </svg>
+                </span>
               </span>
             </span>
           </h1>

@@ -21,18 +21,19 @@ export type ControllerParts = {
   homeMat: THREE.MeshBasicMaterial;
 };
 
-// A generic gamepad, not any real product. Front outline, right half, clockwise from
-// the top centre; the left half is its mirror. Body about 410 wide.
+// Traced from photos of an 8BitDo Ultimate 2 (front view; no logos or lettering). Front
+// outline, right half, clockwise from the top centre; the left half is its mirror.
+// About 416 wide and 290 tall, with long grips.
 const HALF: [number, number][] = [
-  [0, 92], [60, 96], [120, 104], [165, 100], [192, 80], [204, 40], [206, -10],
-  [200, -60], [186, -110], [160, -140], [130, -146], [106, -128], [92, -96],
-  [70, -70], [30, -60], [0, -58],
+  [0, 106], [80, 106], [130, 103], [160, 92], [178, 70], [192, 40], [203, 0], [208, -40],
+  [207, -75], [202, -110], [192, -150], [178, -172], [160, -180], [143, -175], [128, -158],
+  [114, -130], [100, -96], [84, -86], [40, -84], [0, -84],
 ];
 
 const FACE = 20; // z of the front face
 
-function outline() {
-  const right = HALF.map(([x, y]) => new THREE.Vector2(x, y));
+function outline(k = 1) {
+  const right = HALF.map(([x, y]) => new THREE.Vector2(x * k, y * k));
   const left = right.slice(1, -1).reverse().map((p) => new THREE.Vector2(-p.x, p.y));
   const pts = [...right, ...left, right[0]];
   const s = new THREE.Shape();
@@ -63,63 +64,77 @@ function roundRect(w: number, h: number, r: number) {
   return s;
 }
 
-/** Line-art generic gamepad: d-pad, four face buttons, two sticks, shoulders, home. */
+/** Line-art 8BitDo Ultimate 2: offset sticks, d-pad, four face buttons, bumpers and triggers. */
 export function buildController(kit: Kit): ControllerParts {
   const { part, disc, circle, heavy, ink, fine, detail, lineMat, fillMat, colors } = kit;
   const model = new THREE.Group();
   const at = <T extends THREE.Object3D>(o: T, x: number, y: number, z: number) => (o.position.set(x, y, z), o);
 
-  // pen weights: the body heaviest; buttons, d-pad and stick bases lighter; the small parts finest
+  // pen weights: the body heaviest; buttons, d-pad and stick bases lighter; the small parts finest.
+  // The front shell, and a slightly smaller back shell behind it for the rounded back.
   model.add(part(slab(outline(), -FACE, FACE, 28), undefined, heavy));
+  model.add(part(slab(outline(0.93), -FACE - 22, -FACE, 28), undefined, fine));
 
-  // shoulder buttons, peeking over the top edge behind the face
-  for (const x of [-130, 130]) model.add(at(part(slab(roundRect(92, 24, 11), -12, 12, 8), undefined, ink), x, 100, 0));
+  // bumpers over the top edge, the triggers standing up behind them
+  for (const x of [-120, 120]) {
+    model.add(at(part(slab(roundRect(84, 22, 10), -14, 10, 8), undefined, ink), x, 104, 0));
+    model.add(at(part(slab(roundRect(62, 30, 12), -36, -16, 8), undefined, fine), x * 1.04, 110, 0));
+  }
 
-  // d-pad in a shallow dish
+  // d-pad, low on the left, with its pivot dot
   const d = new THREE.Shape();
-  const [a, w] = [24, 8];
+  const [a, w] = [34, 12];
   [[-w, a], [w, a], [w, w], [a, w], [a, -w], [w, -w], [w, -a], [-w, -a], [-w, -w], [-a, -w], [-a, w], [-w, w]].forEach(([x, y], i) =>
     i ? d.lineTo(x, y) : d.moveTo(x, y),
   );
-  model.add(at(circle(36, detail, FACE + 0.3), -120, 30, 0));
-  model.add(at(part(slab(d, FACE, FACE + 6, 1), undefined, ink), -120, 30, 0));
+  model.add(at(circle(42, detail, FACE + 0.3), -61, -28, 0));
+  model.add(at(part(slab(d, FACE, FACE + 6, 1), undefined, ink), -61, -28, 0));
+  model.add(at(circle(4, detail, FACE + 6.3, 20), -61, -28, 0));
 
-  // face buttons: top, right, bottom, left
+  // face buttons: top (X), right (A), bottom (B), left (Y)
   const abxyMats: THREE.MeshBasicMaterial[] = [];
   for (const [x, y] of [
-    [120, 56],
-    [146, 30],
-    [120, 4],
-    [94, 30],
+    [126, 73],
+    [157, 41],
+    [128, 9],
+    [97, 41],
   ]) {
     const m = fillMat();
     abxyMats.push(m);
     model.add(at(part(disc(12, 6), m, ink), x, y, FACE + 3));
   }
 
-  // two sticks, side by side: base, light ring, stem, dished cap
+  // left stick high, right stick low: base, light ring, stem, dished cap
   const ringMats: LineMaterial[] = [];
   const glowMats: LineMaterial[] = [];
-  for (const x of [-62, 62]) {
-    const g = at(new THREE.Group(), x, -38, 0);
+  for (const [x, y] of [
+    [-126, 53],
+    [58, -32],
+  ]) {
+    const g = at(new THREE.Group(), x, y, 0);
     g.add(at(part(disc(31, 4), undefined, ink), 0, 0, FACE + 2));
     const glow = lineMat({ linewidth: 9, transparent: true, opacity: 0, depthWrite: false, color: colors.fun.getHex() });
     const ring = lineMat({ linewidth: 1.8 });
     g.add(circle(27, glow, FACE + 4.2));
     g.add(circle(27, ring, FACE + 4.4));
     g.add(at(part(disc(9, 10), undefined, fine), 0, 0, FACE + 9));
-    g.add(at(part(disc(19, 7), undefined, ink), 0, 0, FACE + 17.5));
-    g.add(circle(13, detail, FACE + 21.2, 40));
+    g.add(at(part(disc(20, 7), undefined, ink), 0, 0, FACE + 17.5));
+    g.add(circle(14, detail, FACE + 21.2, 40));
     model.add(g);
     ringMats.push(ring);
     glowMats.push(glow);
   }
 
-  // centre: two small buttons either side of the orange home button
-  for (const x of [-38, 38]) model.add(at(part(slab(roundRect(20, 9, 4.5), FACE, FACE + 3, 6), undefined, fine), x, 56, 0));
+  // the centre column: two round buttons either side of the (orange) home button, the
+  // two icon buttons under them, the pill button, then the three player lights
+  for (const x of [-56, 53]) model.add(at(part(disc(8, 3), undefined, fine), x, 74, FACE + 1.5));
+  for (const x of [-28, 30]) model.add(at(part(disc(8.5, 3), undefined, fine), x, 43, FACE + 1.5));
+  model.add(at(part(slab(roundRect(18, 9, 4.5), FACE, FACE + 3, 6), undefined, fine), 0, 8, 0));
+  for (const y of [-20, -30, -40]) model.add(at(circle(1.6, detail, FACE + 0.3, 10), 0, y, 0));
+  model.add(at(circle(14, detail, FACE + 0.3), 0, 76, 0));
   const homeMat = fillMat();
   homeMat.color.copy(colors.fun);
-  const home = at(part(disc(11, 4), homeMat, fine), 0, 56, FACE + 2);
+  const home = at(part(disc(11, 4), homeMat, fine), 0, 76, FACE + 2);
   model.add(home);
 
   return { model, ringMats, glowMats, abxyMats, home, homeMat };

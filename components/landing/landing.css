@@ -114,6 +114,14 @@
   animation: none;
   mix-blend-mode: normal;
 }
+.theme-toggle .sketch.erase {
+  animation: theme-erase 0.28s cubic-bezier(0.45, 0, 0.25, 1) both;
+}
+@keyframes theme-erase {
+  to {
+    stroke-dashoffset: -1;
+  }
+}
 @keyframes theme-draw {
   from {
     stroke-dashoffset: 1;
@@ -162,12 +170,38 @@
   letter-spacing: -0.035em;
   position: relative;
 }
-/* a credit for the handwriting, written by hand next to the pointer while it is on the
-   headline: the words write in left to right, then a pen loop circles them */
+/* the smile is a button (over its strokes): a click turns it into her heart, and the credit
+   for the handwriting writes in beside it, then a pen loop circles it */
+.landing .intro .hand {
+  position: relative;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+}
+.landing .intro .smile-btn {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+.landing .intro .smile-btn:focus-visible {
+  outline: 2px dashed var(--ink);
+  outline-offset: 2px;
+}
+.landing.is-intro .intro .smile-btn {
+  pointer-events: none;
+}
+.landing .mark .heart {
+  fill: none;
+  stroke: var(--ink);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-opacity: 0;
+}
 .landing .intro .tip {
   position: absolute;
-  left: 0;
-  top: 0; /* moved by transform, trailing the pointer (Landing's followTip) */
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
@@ -175,7 +209,7 @@
 .landing .intro .tipbox {
   position: relative;
   display: block;
-  translate: 18px calc(-100% - 16px);
+  translate: 4px -50%;
   rotate: -3deg;
   padding: 16px 26px 14px;
   border-radius: 50%;
@@ -187,8 +221,18 @@
 }
 .landing .intro .tip .txt {
   display: block;
-  clip-path: inset(-20% 100% -20% 0);
-  transition: clip-path 0s 0.15s; /* reset once hidden */
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* each stroke: hidden (and its round cap with it) until the pen reaches it; reset once hidden */
+.landing .intro .tip .txt path {
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1;
+  stroke-opacity: 0;
+  transition: stroke-dashoffset 0s 0.15s, stroke-opacity 0s 0.15s;
 }
 .landing .intro .tip .loop {
   position: absolute;
@@ -204,16 +248,21 @@
   stroke-dashoffset: 1;
   transition: stroke-dashoffset 0s 0.15s;
 }
-.landing:not(.is-intro) .intro h1:has(.mark:hover) .tip {
+.landing .intro h1.thanks .tip {
   opacity: 1;
 }
-.landing:not(.is-intro) .intro h1:has(.mark:hover) .tip .txt {
-  clip-path: inset(-20% -5% -20% 0);
-  transition: clip-path 0.55s linear;
+/* a dot has no length to draw along: it just appears when the pen gets to it */
+.landing .intro .tip .txt path.dot {
+  stroke-dasharray: none;
 }
-.landing:not(.is-intro) .intro h1:has(.mark:hover) .tip .loop {
+.landing .intro h1.thanks .tip .txt path {
   stroke-dashoffset: 0;
-  transition: stroke-dashoffset 0.5s cubic-bezier(0.45, 0, 0.25, 1) 0.45s;
+  stroke-opacity: 1;
+  transition: stroke-dashoffset var(--d) cubic-bezier(0.45, 0, 0.55, 1) var(--t), stroke-opacity 0s var(--t);
+}
+.landing .intro h1.thanks .tip .loop {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.5s cubic-bezier(0.45, 0, 0.25, 1) var(--written);
 }
 .landing .intro p {
   margin: 0;
@@ -271,9 +320,10 @@
   animation-delay: 0.3s;
 }
 .landing .stage {
+  --stage-h: clamp(230px, 26vw, 330px);
   position: relative;
   width: 100%;
-  height: clamp(230px, 26vw, 330px);
+  height: var(--stage-h);
   display: grid;
   place-items: center;
 }
@@ -328,6 +378,7 @@
 }
 
 /* the Agent Pill */
+/* the pill sits at the middle of its stage, and opens into its panel around that centre */
 .landing .pillhold {
   position: relative;
   display: grid;
@@ -350,8 +401,8 @@
 }
 .landing .obj[data-side="learning"]:is(:hover, :focus-visible) .pillbox,
 .landing .pillbox.open {
-  width: min(300px, 92%);
-  height: 200px;
+  width: min(300px, 100vw - 32px); /* a fixed width: a % here followed the label's width */
+  height: min(200px, var(--stage-h, 400px) - 24px);
   border-radius: 16px;
 }
 .landing .pill-head {
@@ -626,7 +677,7 @@
     gap: 8px;
   }
   .landing .stage {
-    height: 240px;
+    --stage-h: 240px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

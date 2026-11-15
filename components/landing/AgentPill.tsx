@@ -55,6 +55,15 @@ export default function AgentPill({ override = null, open = false }: { override?
     if (overrideDone) frozen.current = Date.now() - start.current;
   }, [overrideDone]);
 
+  // while the intro narrates (override), the panel logs what it said, not the demo turn
+  const [olog, setOlog] = useState<[string, string][]>([]);
+  useEffect(() => {
+    if (!override) return;
+    const line: [string, string] =
+      override.s === "done" ? ["ok", "Done"] : override.s === "thinking" ? ["you", "› introduce yourself"] : ["", override.label];
+    setOlog((l) => (l.length && l[l.length - 1][1] === line[1] ? l : [...l, line]));
+  }, [override]);
+
   const step = override ?? STEPS[k];
   const status = step.s;
 
@@ -62,16 +71,42 @@ export default function AgentPill({ override = null, open = false }: { override?
   // for thinking); on Done a bead runs once round its rim, then it pops, glows and throws
   // a ring of drops. The CSS dot pulse, label rise and "Needs you" ring stay as they are.
   const wrapRef = useRef<HTMLSpanElement>(null);
+  // hovering (or focusing) its link opens the pill into its panel (CSS): the pill's motion
+  // stops while it is open, so the panel doesn't squash, glow or throw drops
+  const [peek, setPeek] = useState(false);
+  useEffect(() => {
+    const link = wrapRef.current?.closest("a");
+    if (!link) return;
+    const on = () => setPeek(true);
+    const off = () => setPeek(link.matches(":hover") || link.matches(":focus-visible"));
+    const evs = ["pointerenter", "focusin"] as const;
+    evs.forEach((ev) => link.addEventListener(ev, on));
+    link.addEventListener("pointerleave", off);
+    link.addEventListener("focusout", off);
+    return () => {
+      evs.forEach((ev) => link.removeEventListener(ev, on));
+      link.removeEventListener("pointerleave", off);
+      link.removeEventListener("focusout", off);
+    };
+  }, []);
+  // the Done burst plays when the status turns Done, not again when the panel closes on it
+  const seen = useRef<Status | null>(null);
+  const wasPeek = useRef(false);
   useEffect(() => {
     const wrap = wrapRef.current;
-    if (!wrap || open || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const fresh = seen.current !== status;
+    seen.current = status;
+    // just closed from the panel: wait for it to shrink back (0.32s in CSS) before breathing
+    const settle = wasPeek.current && !peek ? 0.35 : 0;
+    wasPeek.current = peek;
+    if (!wrap || open || peek || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const box = wrap.querySelector<HTMLElement>(".pillbox")!;
     const bead = wrap.querySelector<HTMLElement>(".bead")!;
     const drops = Array.from(wrap.querySelectorAll<HTMLElement>(".drop"));
     const ctx = gsap.context(() => {
       if (status === "thinking" || status === "tool") {
-        gsap.to(wrap, { scaleX: 1.03, scaleY: 0.93, duration: status === "tool" ? 0.32 : 0.6, ease: "sine.inOut", yoyo: true, repeat: -1 });
-      } else if (status === "done") {
+        gsap.to(wrap, { scaleX: 1.03, scaleY: 0.93, duration: status === "tool" ? 0.32 : 0.6, ease: "sine.inOut", yoyo: true, repeat: -1, delay: settle });
+      } else if (status === "done" && fresh) {
         // a point on the pill's rim, a fraction f of the way round, clockwise from the top-left
         // of the straight edge. Measured each frame: the pill may still be resizing.
         const at = (f: number) => {
@@ -107,7 +142,7 @@ export default function AgentPill({ override = null, open = false }: { override?
       }
     }, wrap);
     return () => ctx.revert();
-  }, [status, open]);
+  }, [status, open, peek]);
 
   return (
     <span className="pillhold">
@@ -121,9 +156,9 @@ export default function AgentPill({ override = null, open = false }: { override?
             <span className="time">{fmt(clock)}</span>
           </span>
           <ol className="log">
-            {STEPS.slice(0, k + 1).map((x, i) => (
-              <li key={i} className={x.log[0]}>
-                {x.log[1]}
+            {(override && olog.length ? olog : STEPS.slice(0, k + 1).map((x) => x.log)).map(([cls, text], i) => (
+              <li key={i} className={cls}>
+                {text}
               </li>
             ))}
           </ol>

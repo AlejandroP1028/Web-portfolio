@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useState } from "react";
 import { flushSync } from "react-dom";
 
 import { THEME_KEY } from "./theme";
@@ -26,8 +26,11 @@ export default function ThemeToggle() {
     return () => mq.removeEventListener("change", onSystem);
   }, []);
 
-  const pick = (t: Theme, e: MouseEvent<HTMLButtonElement>) => {
+  const [erasing, setErasing] = useState(false);
+
+  const pick = (t: Theme, b: DOMRect) => {
     const apply = () => {
+      setErasing(false);
       document.documentElement.dataset.theme = t;
       try {
         localStorage.setItem(THEME_KEY, t);
@@ -37,7 +40,6 @@ export default function ThemeToggle() {
     // The new theme grows out of the button as a circle (a view transition: the browser
     // snapshots the page before and after, and the new snapshot is revealed by the clip).
     if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return apply();
-    const b = e.currentTarget.getBoundingClientRect();
     const x = b.left + b.width / 2;
     const y = b.top + b.height / 2;
     const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
@@ -49,13 +51,20 @@ export default function ThemeToggle() {
     });
   };
 
-  // the button shows the theme you are in; a click switches to the other, and the new
-  // icon is drawn in with the pen (its key changes, so it mounts afresh)
+  // the button shows the theme you are in. A click erases its icon with the pen, then switches to the
+  // other theme, whose icon is drawn in with the pen (its key changes, so it mounts afresh).
+  const reduce = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const next: Theme = theme === "dark" ? "light" : "dark";
   return (
-    <button type="button" className="theme-toggle" onClick={(e) => pick(next, e)} aria-label={`Switch to ${next} theme`}>
+    <button type="button" className="theme-toggle" onClick={(e) => {
+        if (erasing) return;
+        const b = e.currentTarget.getBoundingClientRect();
+        if (reduce()) return pick(next, b);
+        setErasing(true);
+        setTimeout(() => pick(next, b), 280);
+      }} aria-label={`Switch to ${next} theme`}>
       {theme && (
-        <svg key={theme} className="sketch" viewBox="0 0 24 24" aria-hidden="true">
+        <svg key={theme} className={`sketch${erasing ? " erase" : ""}`} viewBox="0 0 24 24" aria-hidden="true">
           <path pathLength={1} d={theme === "dark" ? MOON : SUN} />
         </svg>
       )}
