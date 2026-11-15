@@ -111,19 +111,18 @@ function readPalette(el: HTMLElement): Palette {
 }
 
 /**
- * The landing row's 3D layer: one canvas behind the three links. Objects sit on the
- * centre of their link's stage, so the row and the stacked phone layout both work.
+ * The landing's 3D layer: one canvas behind the content, scrolling with it. Objects sit on
+ * the centre of their link's stage, so the desktop row and the phone layout both work.
  * Throws if WebGL is unavailable; the caller shows the flat drawings instead.
  */
 export function createLandingScene(opts: {
   canvas: HTMLCanvasElement;
-  row: HTMLElement;
   stageWork: HTMLElement;
   stageFun: HTMLElement;
   tokens: HTMLElement;
   anim: AnimState;
 }) {
-  const { canvas, row, stageWork, stageFun, tokens, anim } = opts;
+  const { canvas, stageWork, stageFun, tokens, anim } = opts;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0x000000, 0);
@@ -147,26 +146,25 @@ export function createLandingScene(opts: {
   controller.homeMat.transparent = true; // fades in as the intro finishes drawing the controller
   const homeFront = () => controller.home.localToWorld(new THREE.Vector3(0, 0, 2));
 
-  // layout: the canvas covers the viewport (so the camera dive isn't cropped to the row);
-  // each object follows its link's stage, including while the page scrolls
+  // layout: the canvas covers the content and scrolls with it, so each object sits on its
+  // link's stage in page space and scrolling moves both together, with nothing to catch up
   let W = 1;
   let H = 1;
-  const place = (o: Placed, stage: HTMLElement) => {
+  const place = (o: Placed, stage: HTMLElement, c: DOMRect) => {
     const s = stage.getBoundingClientRect();
-    o.root.position.set(s.left + s.width / 2 - W / 2, -(s.top + s.height / 2 - H / 2), 0);
+    o.root.position.set(s.left - c.left + s.width / 2 - W / 2, -(s.top - c.top + s.height / 2 - H / 2), 0);
     o.fit = Math.min(s.width / o.size.x, s.height / o.size.y) * 0.8;
   };
   const layout = () => {
-    W = Math.max(1, window.innerWidth);
-    H = Math.max(1, window.innerHeight);
+    W = Math.max(1, canvas.clientWidth);
+    H = Math.max(1, canvas.clientHeight);
     renderer.setSize(W, H, false);
     Object.assign(camera, { left: -W / 2, right: W / 2, top: H / 2, bottom: -H / 2 });
     camera.updateProjectionMatrix();
     kit.lineMats.forEach((m) => m.resolution.set(W, H));
   };
   const ro = new ResizeObserver(layout);
-  ro.observe(row);
-  window.addEventListener("resize", layout);
+  ro.observe(canvas);
   layout();
 
   // theme
@@ -202,8 +200,11 @@ export function createLandingScene(opts: {
   let last = t0;
   let raf = 0;
 
-  // world point → viewport px (the camera never moves: one world unit is one CSS px)
-  const toView = (v: THREE.Vector3) => ({ x: W / 2 + v.x, y: H / 2 - v.y });
+  // world point → viewport px (the camera never moves: one world unit is one CSS px of the canvas)
+  const toView = (v: THREE.Vector3) => {
+    const c = canvas.getBoundingClientRect();
+    return { x: c.left + W / 2 + v.x, y: c.top + H / 2 - v.y };
+  };
   const v3 = new THREE.Vector3();
   /** The door of an object on screen: the laptop's screen, or the controller's home button. */
   const target = (side: "work" | "fun"): Target | null => {
@@ -234,8 +235,9 @@ export function createLandingScene(opts: {
     const px = rm ? 0 : ptr.x;
     const py = rm ? 0 : ptr.y;
 
-    place(lap, stageWork);
-    place(ctl, stageFun);
+    const c = canvas.getBoundingClientRect();
+    place(lap, stageWork, c);
+    place(ctl, stageFun, c);
     draw(lapLines, anim.lapDraw);
     draw(ctlLines, anim.ctlDraw);
     controller.homeMat.opacity = Math.min(1, Math.max(0, (anim.ctlDraw - 0.7) / 0.3));
@@ -289,7 +291,6 @@ export function createLandingScene(opts: {
     dispose() {
       cancelAnimationFrame(raf);
       ro.disconnect();
-      window.removeEventListener("resize", layout);
       dark.removeEventListener("change", retheme);
       themeObserver.disconnect();
       window.removeEventListener("pointermove", onMove);

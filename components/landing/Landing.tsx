@@ -29,7 +29,6 @@ import "./landing.css";
 
 type Scene = { setHover(side: Side | null): void; target(side: "work" | "fun"): Target | null; dispose(): void };
 
-const CV_URL = "/alejandro-prado-cv.pdf";
 const NAME = HEADLINE; // the drawn headline is a handwriting trace; regenerate it to change the words
 const RETURN_KEY = "landing-return";
 /** Intro playback speed: 1 is about 8s; 1.25 is faster, 0.8 slower. */
@@ -71,7 +70,6 @@ function pickMode(): { intro: boolean; ret: Side | null } {
 export default function Landing() {
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
-  const rowRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const workRef = useRef<HTMLSpanElement>(null);
   const funRef = useRef<HTMLSpanElement>(null);
@@ -105,7 +103,6 @@ export default function Landing() {
         if (cancelled) return;
         scene = createLandingScene({
           canvas: canvasRef.current!,
-          row: rowRef.current!,
           stageWork: workRef.current!,
           stageFun: funRef.current!,
           tokens: rootRef.current!,
@@ -129,7 +126,7 @@ export default function Landing() {
     const typed = q(".typed")[0] as HTMLElement;
     const hold = q('.obj[data-side="learning"] .pillhold')[0];
     const box = q(".pillbox")[0];
-    const rest = q(".intro p, .pick, .lab, .links");
+    const rest = q(".intro p, .pick, .lab");
     const r = hold.getBoundingClientRect();
     const say = (s: "tool" | "done", label: string) => () => setPill({ s, label });
 
@@ -201,7 +198,7 @@ export default function Landing() {
       .to(hold, { x: 0, y: 0, scale: 1, duration: 0.7, ease: "power3.inOut" }, 7.6)
       .call(say("done", "Done"), [], 8.3)
       .to(box, { width: 162, duration: 0.35, ease: "power3.inOut" }, 8.3)
-      .to(q(".pick, .lab, .links"), { opacity: 1, y: 0, duration: 0.4, stagger: 0.05 }, 8.6);
+      .to(q(".pick, .lab"), { opacity: 1, y: 0, duration: 0.4, stagger: 0.05 }, 8.6);
     // each flight (to the headline, the laptop, the controller, home): the pill stretches as
     // it sets off and eases back into shape as it lands, with no bounce
     for (const at of [0.8, 3.8, 5.7, 7.6]) {
@@ -434,7 +431,7 @@ export default function Landing() {
           </span>
         </header>
 
-        <div className="row" ref={rowRef}>
+        <div className="row">
           <canvas className="scene" ref={canvasRef} aria-hidden="true" />
 
           <Link className="obj" data-side="work" href="/work" onClick={go("work")} {...hoverProps("work")}
@@ -481,12 +478,6 @@ export default function Landing() {
           </Link>
         </div>
 
-        <nav className="links" aria-label="Quick links">
-          <Link href="/work">Work</Link>
-          <Link href="/learning">Learning</Link>
-          <Link href="/fun">Fun</Link>
-          <a href={CV_URL} target="_blank" rel="noopener">CV (PDF)</a>
-        </nav>
       </main>
       <div className="wipe" ref={wipeRef} aria-hidden="true" />
     </div>

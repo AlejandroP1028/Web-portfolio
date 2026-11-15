@@ -131,6 +131,7 @@
 .landing {
   min-height: 100vh;
   min-height: 100svh; /* phones: the height with the browser bars showing */
+  overflow-x: clip; /* nothing (the intro pill, the credit, the Done drops) may scroll the page sideways */
   background: var(--paper);
   color: var(--ink);
 }
@@ -153,8 +154,7 @@
   z-index: 1;
 }
 
-.landing .intro,
-.landing .links {
+.landing .intro {
   position: relative;
   z-index: 1;
 }
@@ -282,16 +282,17 @@
   margin-top: 6px;
 }
 
-/* the row: one canvas behind three links */
+/* the row: three links over one canvas (the canvas fills .wrap, not just the row, so an
+   object turning to face you is never cropped) */
 .landing .row {
-  position: relative;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
 }
-/* the 3D layer covers the viewport, behind the page content */
+/* the 3D layer covers the content (.wrap) behind it and scrolls with it: a fixed canvas
+   has to chase the page every frame, and on phones it lags and the objects jump */
 .landing .scene {
-  position: fixed;
+  position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
@@ -502,25 +503,6 @@
 .landing .log .ask { color: #ffb454; }
 .landing .log .ok { color: #6fd69a; }
 
-.landing .links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 22px;
-  font-weight: 500;
-  color: var(--muted);
-  border-top: 1px solid var(--line);
-  padding-top: 18px;
-}
-.landing .links a {
-  text-decoration: none;
-  color: var(--ink);
-  border-bottom: 1px solid var(--line);
-  transition: border-color 0.2s ease;
-}
-.landing .links a:hover {
-  border-color: var(--ink);
-}
-
 /* the grow-from-the-object transition, and the side pages it lands on */
 .landing .wipe {
   position: fixed;
@@ -565,8 +547,7 @@
 }
 .landing.is-intro .intro p,
 .landing.is-intro .pick,
-.landing.is-intro .lab,
-.landing.is-intro .links {
+.landing.is-intro .lab {
   opacity: 0;
   transform: translateY(8px);
 }
@@ -721,14 +702,6 @@
   }
   .landing .obj[data-side="learning"] .stage {
     --stage-h: 96px;
-  }
-  .landing .links {
-    gap: 4px 24px;
-  }
-  .landing .links a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
   }
   /* the credit goes under the heart instead of beside it, smaller, so it stays on screen */
   .landing .intro .tip {
