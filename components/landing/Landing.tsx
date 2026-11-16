@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { flushSync } from "react-dom";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import gsap from "gsap";
@@ -24,6 +24,7 @@ const TIP_TIMES = (() => {
 })();
 const TIP_WRITTEN = TIP_TIMES[TIP_TIMES.length - 1].reduce((a, b) => a + b);
 import { sans, mono, hand } from "./fonts";
+import { panelInset } from "../learning/panel";
 import type { AnimState, Side, Target } from "./scene";
 import "./landing.css";
 
@@ -37,6 +38,7 @@ const INTRO_SPEED = 1;
 // every full page load and the way back from a side page plays instead after in-app navigation.
 let loadedOnce = false;
 const FULL = "inset(0px 0px 0px 0px round 0px)";
+const BACKDROP_BLUR = 10; // px; landing.css uses the same for .is-backdrop and the way back from Learning
 
 const store = {
   get: (k: string) => { try { return sessionStorage.getItem(k); } catch { return null; } },
@@ -67,8 +69,15 @@ function pickMode(): { intro: boolean; ret: Side | null } {
   return { intro: false, ret: store.get(RETURN_KEY) as Side | null };
 }
 
+/**
+ * The landing. It lives in the (home) layout, so it stays mounted under the Learning index
+ * (/learning), which is an overlay: while that's open the landing is blurred and inert.
+ */
 export default function Landing() {
   const router = useRouter();
+  const overlay = usePathname() === "/learning";
+  // opened straight onto /learning (a link or a refresh): no intro, just the still landing
+  const [startedUnder] = useState(overlay);
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const workRef = useRef<HTMLSpanElement>(null);
@@ -77,7 +86,7 @@ export default function Landing() {
   const sceneRef = useRef<Scene | null>(null);
   const busy = useRef(false);
 
-  const [mode] = useState(pickMode);
+  const [mode] = useState(() => (startedUnder ? { intro: false, ret: null } : pickMode()));
   const [introOn, setIntroOn] = useState(mode.intro);
   const [retOn, setRetOn] = useState(mode.ret !== null);
   const [gl, setGl] = useState<"boot" | "ready" | "none">("boot");
@@ -93,6 +102,38 @@ export default function Landing() {
   useEffect(() => {
     loadedOnce = true;
   }, []);
+
+  // Under the Learning overlay the page can't be focused or clicked (React 18 doesn't render
+  // a boolean `inert`, so it's set here). The theme toggle stays usable.
+  const lastOverlay = useRef(overlay);
+  useLayoutEffect(() => {
+    const wrap = rootRef.current!.querySelector<HTMLElement>(".wrap")!;
+    const wipe = wipeRef.current!;
+    if (overlay) wrap.setAttribute("inert", "");
+    else wrap.removeAttribute("inert");
+    const was = lastOverlay.current;
+    lastOverlay.current = overlay;
+    if (overlay && !was) {
+      // the overlay's panel is now drawn exactly where the growing pill ended: hand over to it
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        wipe.classList.remove("on");
+        gsap.set(wipe, { clearProps: "clipPath" });
+        setPillOpen(false); // closes behind the panel, so it's back to size for the way out
+        busy.current = false;
+      }));
+    } else if (!overlay && was) {
+      // closed: the panel (now this wipe, in the overlay's place) shrinks back into the pill
+      // while the page comes back into focus. Before paint, so nothing flashes in between.
+      wipe.dataset.side = "learning";
+      wipe.classList.add("on");
+      const box = rectOf(rootRef.current!.querySelector(".pillbox")!);
+      gsap.fromTo(wrap, { filter: `blur(${BACKDROP_BLUR}px)` }, { filter: "blur(0px)", duration: 0.6, ease: "power2.inOut", clearProps: "filter" });
+      gsap.fromTo(wipe, { clipPath: panelInset() }, {
+        clipPath: insetOf(box, 14), duration: 0.6, ease: "power3.inOut",
+        onComplete: () => { wipe.classList.remove("on"); gsap.set(wipe, { clearProps: "clipPath" }); },
+      });
+    }
+  }, [overlay]);
 
   // three.js loads after the page, so the text and the pill show at once
   useEffect(() => {
@@ -252,7 +293,8 @@ export default function Landing() {
     };
     if (side === "learning") {
       const box = rectOf(rootRef.current!.querySelector(".pillbox")!);
-      gsap.fromTo(wipe, { clipPath: FULL }, { clipPath: insetOf(box, 14), duration: 0.55, ease: "power3.inOut", onComplete: done });
+      gsap.fromTo(rootRef.current!.querySelector(".wrap"), { filter: `blur(${BACKDROP_BLUR}px)` }, { filter: "blur(0px)", duration: 0.6, ease: "power2.inOut", clearProps: "filter" });
+      gsap.fromTo(wipe, { clipPath: panelInset() }, { clipPath: insetOf(box, 14), duration: 0.6, ease: "power3.inOut", onComplete: done });
     } else if (gl === "ready") {
       fill(side, 1, 0, 0.6, "power3.inOut").then(done);
     } else {
@@ -342,9 +384,15 @@ export default function Landing() {
     };
     const run = async () => {
       if (side === "learning") {
+        // the pill opens into its panel, which then grows into the Learning panel: the
+        // Learning index draws its panel in that exact box, so the page change is seamless
         setPillOpen(true);
         await wait(320);
-        await grow(insetOf(rectOf(stage.querySelector(".pillbox")!), 16), 0.5, "power3.inOut");
+        wipe.dataset.side = side;
+        wipe.classList.add("on");
+        // the landing stays, blurred, behind the panel (the Learning page draws it the same way)
+        gsap.to(rootRef.current!.querySelector(".wrap"), { filter: `blur(${BACKDROP_BLUR}px)`, duration: 0.6, ease: "power2.inOut" });
+        await gsap.fromTo(wipe, { clipPath: insetOf(rectOf(stage.querySelector(".pillbox")!), 16) }, { clipPath: panelInset(), duration: 0.6, ease: "power3.inOut" }).then();
       } else if (sceneRef.current) {
         anim.current.press = side;
         await wait(220);
@@ -354,7 +402,7 @@ export default function Landing() {
       } else {
         await grow(insetOf(rectOf(stage), 18), 0.56, "power3.inOut");
       }
-      store.set(RETURN_KEY, side);
+      if (side !== "learning") store.set(RETURN_KEY, side); // learning is an overlay: the landing never leaves
       router.push(`/${side}`);
     };
     run();
@@ -364,8 +412,12 @@ export default function Landing() {
   const settled = (mode.intro && !introOn) || mode.ret !== null;
   const modeClass = `${introOn ? " is-intro" : ""}${settled ? " settled" : ""}${retOn ? ` is-returning ret-${mode.ret}` : ""}`;
   return (
-    <div ref={rootRef} className={`landing ${sans.variable} ${mono.variable} ${hand.variable} gl-${gl}${modeClass}`} suppressHydrationWarning>
-      <script dangerouslySetInnerHTML={{ __html: BOOT }} />
+    <div
+      ref={rootRef}
+      className={`landing ${sans.variable} ${mono.variable} ${hand.variable} gl-${gl}${modeClass}${overlay ? " is-backdrop" : ""}${startedUnder ? " settled" : ""}`}
+      suppressHydrationWarning
+    >
+      {!startedUnder && <script dangerouslySetInnerHTML={{ __html: BOOT }} />}
       <ThemeToggle />
       <main className="wrap">
         <header className="intro">

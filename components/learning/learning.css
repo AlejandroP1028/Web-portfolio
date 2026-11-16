@@ -1,0 +1,562 @@
+/* The Learning pages live in the Agent Pill's world. The index is the pill's panel, grown
+   to most of the screen on the landing's paper; a project page is that panel grown to the
+   full screen. Colours come from landing.css (the .lp/.pp token block). */
+.lp,
+.pp {
+  --run: #c3b1ff; /* the pill's "running a tool" colour */
+  --ok: #6fd69a; /* "done" */
+  --wait: #ffb454; /* "needs you" */
+  --pt: var(--pill-text);
+  --pm: var(--pill-muted);
+  --rule: color-mix(in srgb, var(--pill-text) 12%, transparent);
+  --raise: color-mix(in srgb, var(--pill-text) 6%, var(--pill-bg));
+  --hand: var(--font-landing-hand), "Comic Sans MS", cursive;
+  font-family: var(--sans);
+}
+.lp a,
+.pp a {
+  color: inherit;
+}
+.lp :focus-visible,
+.pp :focus-visible {
+  outline: 2px solid var(--run);
+  outline-offset: 2px;
+}
+
+/* state dots, as on the pill */
+.lp .dot,
+.pp .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--pm);
+}
+.dot.run {
+  background: var(--run);
+  animation: landing-pulse 1.4s ease-in-out infinite;
+}
+.dot.ok {
+  background: var(--ok);
+}
+.dot.wait {
+  background: var(--wait);
+}
+
+/* ---------- the index: the pill's panel, grown ---------- */
+/* an overlay on the landing (which stays mounted, blurred, underneath); clicks on it
+   outside the panel close it */
+.lp {
+  position: fixed;
+  inset: 0;
+  z-index: 40; /* above the landing, below the theme toggle */
+  color: var(--pt);
+  cursor: pointer;
+}
+.lp-panel {
+  cursor: auto;
+}
+/* the same box as panel.ts: 16px from the sides (up to 960px wide), top clamp(16px, 7vh, 64px), 16px from the bottom */
+.lp-panel {
+  position: fixed;
+  width: min(960px, 100vw - 32px);
+  left: calc((100vw - min(960px, 100vw - 32px)) / 2);
+  top: clamp(16px, 7vh, 64px);
+  height: calc(100vh - clamp(16px, 7vh, 64px) - 16px);
+  height: calc(100svh - clamp(16px, 7svh, 64px) - 16px);
+  border-radius: 16px;
+  background: var(--pill-bg);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  font: 14px/1.5 var(--mono);
+}
+.lp-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 16px 0 20px;
+  border-bottom: 1px solid var(--rule);
+}
+.lp-head h1 {
+  margin: 0;
+  font: 600 14px/1 var(--mono);
+  color: var(--run);
+}
+.lp-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--pm);
+  font-variant-numeric: tabular-nums;
+}
+.lp-close {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--pm);
+}
+.lp-close:hover {
+  background: var(--raise);
+  color: var(--pt);
+}
+.lp-body {
+  overflow-y: auto;
+  padding: clamp(20px, 4vw, 40px) clamp(16px, 4vw, 40px) 40px;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+.lp-prompt {
+  margin: 0;
+  font: 400 clamp(1.9rem, 5vw, 2.8rem)/1.1 var(--hand);
+  color: var(--pt);
+}
+.lp-prompt .caret {
+  color: var(--pm);
+  font-family: var(--mono);
+  font-size: 0.6em;
+  vertical-align: 0.15em;
+}
+.lp-sub {
+  margin: 0 0 18px;
+  max-width: 60ch;
+  color: var(--pm);
+  font-size: 13px;
+}
+.lp-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+.lp-list li {
+  border-bottom: 1px solid var(--rule);
+}
+.lp-row {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 15rem) minmax(0, 1fr) auto 1rem;
+  align-items: center;
+  gap: 4px 16px;
+  padding: 16px 10px;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background-color 0.15s;
+}
+.lp-row:hover,
+.lp-row:focus-visible {
+  background: var(--raise);
+}
+.lp-title {
+  font-weight: 600;
+  color: var(--pt);
+}
+.lp-line {
+  color: var(--pm);
+  font-size: 13px;
+  font-family: var(--sans);
+}
+.lp-meta {
+  font-size: 12px;
+  color: var(--pm);
+  white-space: nowrap;
+}
+.lp-go {
+  color: var(--pm);
+  transition: transform 0.2s var(--ease), color 0.15s;
+}
+.lp-row:hover .lp-go {
+  color: var(--pt);
+  transform: translateX(3px);
+}
+.lp-now {
+  margin-top: 28px;
+  display: grid;
+  gap: 8px;
+}
+.lp-now h2 {
+  margin: 0;
+  font: 400 1.6rem/1 var(--hand);
+  color: var(--pt);
+}
+.lp-now ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  color: var(--pm);
+}
+.lp-now li::before {
+  content: "› ";
+  color: var(--run);
+}
+
+/* ---------- a project page: the panel at full screen ---------- */
+.pp {
+  min-height: 100vh;
+  background: var(--pill-bg);
+  color: var(--pt);
+}
+.pp-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
+  padding-right: 72px; /* clear of the theme toggle */
+  background: color-mix(in srgb, var(--pill-bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule);
+  font: 13px/1 var(--mono);
+}
+.pp-back {
+  text-decoration: none;
+  color: var(--pm);
+  padding: 8px 10px;
+  margin-right: 6px;
+  border-radius: 8px;
+}
+.pp-back:hover {
+  color: var(--pt);
+  background: var(--raise);
+}
+.pp-status {
+  color: var(--pm);
+}
+.pp-wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: clamp(32px, 6vw, 64px) max(16px, env(safe-area-inset-right, 0px)) 72px max(16px, env(safe-area-inset-left, 0px));
+  display: grid;
+  gap: clamp(36px, 6vw, 56px);
+}
+.pp-hero {
+  display: grid;
+  gap: 14px;
+}
+.pp-hero h1 {
+  margin: 0;
+  font-size: clamp(2.4rem, 7vw, 4.2rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  text-wrap: balance;
+}
+.pp-line {
+  margin: 0;
+  font-size: clamp(1.1rem, 2.4vw, 1.35rem);
+  color: var(--pm);
+  max-width: 44ch;
+}
+.pp-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 32px;
+  margin: 10px 0 0;
+}
+.pp-facts dt {
+  font: 600 11px/1.6 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pm);
+}
+.pp-facts dd {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.pp-part {
+  display: grid;
+  gap: 12px;
+  max-width: 64ch;
+}
+.pp-part h2 {
+  margin: 0;
+  font: 600 13px/1.4 var(--mono);
+  color: var(--run);
+}
+.pp-part h2 span {
+  color: var(--pm);
+}
+.pp-part p {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+/* how it works: a left-to-right chain */
+.flow {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  counter-reset: none;
+  max-width: none;
+}
+.pp-part:has(.flow) {
+  max-width: none;
+}
+.flow li {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--raise);
+  border: 1px solid var(--rule);
+}
+.flow li:not(:last-child)::after {
+  content: "→";
+  position: absolute;
+  right: -11px;
+  top: 14px;
+  color: var(--run);
+  font: 600 13px/1 var(--mono);
+}
+.flow b {
+  font: 600 13px/1.3 var(--mono);
+}
+.flow span {
+  font-size: 0.86rem;
+  color: var(--pm);
+  line-height: 1.45;
+}
+
+/* what you can do: a grid of cards; tour-linked ones can jump the showcase */
+.pp-part:has(.feats) {
+  max-width: none;
+}
+.feats {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.feats li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto 1fr;
+  gap: 6px 14px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: var(--raise);
+  border: 1px solid var(--rule);
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.feats li.on {
+  border-color: color-mix(in srgb, var(--run) 55%, transparent);
+  background: color-mix(in srgb, var(--run) 7%, var(--raise));
+}
+.feats b {
+  font-weight: 600;
+  font-size: 1rem;
+}
+.feats span {
+  grid-column: 1;
+  color: var(--pm);
+  font-size: 0.93rem;
+  line-height: 1.55;
+}
+.feats button {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  font: 600 11px/1 var(--mono);
+  color: var(--run);
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 7px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.feats button:hover {
+  background: var(--pill-bg);
+}
+.feats li.on button {
+  color: var(--pill-bg);
+  background: var(--run);
+  border-color: var(--run);
+}
+
+/* screenshots */
+.pp-shots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.pp-shots.n1 {
+  grid-template-columns: 1fr;
+}
+.pp-shots.n3 > figure:first-child {
+  grid-column: 1 / -1;
+}
+.pp-shots figure {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.pp-shots img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+}
+.pp-shots figcaption {
+  font: 12px/1.4 var(--mono);
+  color: var(--pm);
+}
+
+/* the Agent Pill showcase */
+.showcase {
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+.showcase iframe {
+  display: block;
+  width: 100%;
+  height: clamp(460px, 62vh, 640px);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  background: #1e2026;
+}
+.showcase figcaption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 1.6em;
+  font: 13px/1.4 var(--mono);
+  color: var(--pm);
+}
+
+/* Bionic Reading, live */
+.pp .bionic {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+  padding: 22px 24px;
+  border-radius: 12px;
+  background: var(--raise);
+  border: 1px solid var(--rule);
+}
+.pp .bionic p {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.7;
+  color: var(--pm);
+  max-width: 60ch;
+}
+.pp .bionic p.on b {
+  color: var(--pt);
+  font-weight: 600;
+}
+.pp .switch {
+  font: 600 12px/1 var(--mono);
+  color: var(--run);
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.pp-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  align-items: center;
+}
+.pp-links a {
+  font: 600 13px/1 var(--mono);
+  text-decoration: none;
+  color: var(--run);
+  padding: 10px 14px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+}
+.pp-links a:hover {
+  background: var(--raise);
+}
+.pp-credit {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--pm);
+  max-width: 64ch;
+}
+.pp-next {
+  display: grid;
+  gap: 4px;
+  justify-self: end;
+  text-align: right;
+  text-decoration: none;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+  width: 100%;
+}
+.pp-next span {
+  font: 12px/1 var(--mono);
+  color: var(--pm);
+}
+.pp-next b {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+.pp-next:hover b {
+  color: var(--run);
+}
+
+@media (max-width: 760px) {
+  .lp-row {
+    grid-template-columns: 8px minmax(0, 1fr) 1rem;
+  }
+  .lp-line,
+  .lp-meta {
+    grid-column: 2;
+  }
+  .lp-go {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .flow {
+    grid-template-columns: 1fr;
+  }
+  .flow li:not(:last-child)::after {
+    content: "↓";
+    right: auto;
+    left: 18px;
+    top: auto;
+    bottom: -12px;
+  }
+  .pp-shots {
+    grid-template-columns: 1fr;
+  }
+  .feats {
+    grid-template-columns: 1fr;
+  }
+  .showcase iframe {
+    height: 560px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot.run {
+    animation: none;
+  }
+}

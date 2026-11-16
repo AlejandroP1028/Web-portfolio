@@ -1,7 +1,9 @@
 /* Landing page and the three side pages. Plain CSS: the tokens need light and dark
    values, which the Tailwind setup in this repo can't express (see CLAUDE.md). */
 .landing,
-.side-page {
+.side-page,
+.lp,
+.pp {
   --paper: #f4f4f1;
   --ink: #16181b;
   --muted: #5e636b;
@@ -26,7 +28,7 @@
 /* Dark: follows the system unless the theme picker set <html data-theme> (see ThemeToggle).
    The same values twice, so an explicit choice wins either way. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) :is(.landing, .side-page) {
+  :root:not([data-theme="light"]) :is(.landing, .side-page, .lp, .pp) {
     --paper: #121315;
     --ink: #e9eaec;
     --muted: #a0a5ad;
@@ -41,7 +43,7 @@
     color-scheme: dark;
   }
 }
-:root[data-theme="dark"] :is(.landing, .side-page) {
+:root[data-theme="dark"] :is(.landing, .side-page, .lp, .pp) {
   --paper: #121315;
   --ink: #e9eaec;
   --muted: #a0a5ad;
@@ -574,6 +576,21 @@
 }
 .landing.ret-work .wipe { --bgc: var(--work); }
 .landing.ret-learning .wipe { --bgc: var(--pill-bg); }
+/* back from the Learning index: the colour starts as that page's panel (same box as
+   components/learning/panel.ts), not the whole screen, from the very first paint */
+.landing.is-returning.ret-learning .wipe {
+  --pw: min(960px, 100vw - 32px);
+  --pt: clamp(16px, 7vh, 64px);
+  clip-path: inset(var(--pt) calc((100vw - var(--pw)) / 2) 16px calc((100vw - var(--pw)) / 2) round 16px);
+}
+.landing.is-returning.ret-learning .wrap {
+  filter: blur(10px); /* un-blurred by Landing's return effect (BACKDROP_BLUR) */
+}
+/* under the Learning overlay: the landing stays, blurred and still (BACKDROP_BLUR) */
+.landing.is-backdrop .wrap {
+  filter: blur(10px);
+  pointer-events: none;
+}
 .landing.ret-fun .wipe { --bgc: var(--fun); }
 
 [data-side="work"].wipe,
