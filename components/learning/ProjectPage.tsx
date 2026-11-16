@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import gsap from "gsap";
+import { ArrowLeft, ArrowRight, ArrowUpRight, X } from "lucide-react";
 import { SplitText } from "gsap/SplitText";
 import { sans, mono, hand } from "../landing/fonts";
 import ThemeToggle from "../landing/ThemeToggle";
@@ -39,12 +40,12 @@ const Paras = ({ body }: { body: string[] }) => (
 
 // Captions for the showcase tour, by chapter id (sent by the embedded app over postMessage).
 const CHAPTERS: Record<string, string> = {
-  states: "Every pill shows what its conversation is doing right now.",
-  panel: "Click a pill and its terminal opens. Click away and it shrinks back.",
-  permission: "When Claude needs an answer, the pill waits for you instead of popping open.",
-  groups: "Pills merge into groups, one per project.",
-  dock: "Dock a group to the edge and it turns into blobs that move with Claude's state.",
-  themes: "Themes for the pills, the panel and the terminal.",
+  states: "Every pill shows what its conversation is doing right now",
+  panel: "Click a pill and its terminal opens, click away and it shrinks back",
+  permission: "When Claude needs an answer, the pill waits for you instead of popping open",
+  groups: "Pills merge into groups, one per project",
+  dock: "Dock a group to the edge and it turns into blobs that move with Claude's state",
+  themes: "Themes for the pills, the panel and the terminal",
 };
 
 // Phones get recordings of each chapter instead of the live app (it's a desktop app, and too
@@ -55,7 +56,7 @@ const say = (msg: object) => window.postMessage({ source: "agent-pill-showcase",
 
 /** The real Agent Pill interface, running a scripted tour on a pretend desktop. */
 function Showcase() {
-  const [caption, setCaption] = useState("Every pill shows what its conversation is doing right now.");
+  const [caption, setCaption] = useState(CHAPTERS.states);
   const [paused, setPaused] = useState(false);
   // null until mounted, so the server render loads neither the app nor a GIF
   const [phone, setPhone] = useState<boolean | null>(null);
@@ -123,20 +124,34 @@ function Features({ items }: { items: Feature[] }) {
     const r = frame.getBoundingClientRect();
     if (r.top < 60 || r.bottom > innerHeight) frame.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" });
   };
+  // the tour's chapters read as a list next to it; the rest is plain text below
+  const tour = items.filter((f) => f.chapter);
+  const more = items.filter((f) => !f.chapter);
   return (
-    <ul className="feats">
-      {items.map((f) => (
-        <li key={f.title} className={f.chapter && f.chapter === now ? "on" : undefined}>
-          <b>{f.title}</b>
-          <span>{f.body}</span>
-          {f.chapter && (
+    <>
+      <ol className="feats">
+        {tour.map((f) => (
+          <li key={f.title} className={f.chapter === now ? "on" : undefined}>
+            <span className={`dot ${f.chapter === now ? "run" : ""}`} aria-hidden="true" />
+            <b>{f.title}</b>
+            <span className="body">{f.body}</span>
             <button type="button" onClick={() => show(f.chapter!)}>
               {f.chapter === now ? "playing" : "show me"}
             </button>
-          )}
-        </li>
-      ))}
-    </ul>
+          </li>
+        ))}
+      </ol>
+      {more.length > 0 && (
+        <ul className="feats-more">
+          {more.map((f) => (
+            <li key={f.title}>
+              <b>{f.title}</b>
+              <span>{f.body}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
   );
 }
 
@@ -144,7 +159,7 @@ function Features({ items }: { items: Feature[] }) {
  * A screenshot at a readable size: full screen, pannable when it's wider than the screen
  * (on phones the captures are desktop-sized). Closed with the button, Esc, or a tap outside.
  */
-function Zoom({ shot, onClose }: { shot: Shot; onClose: () => void }) {
+function Zoom({ shot, phone, onClose }: { shot: Shot; phone?: boolean; onClose: () => void }) {
   const closeRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     closeRef.current?.focus();
@@ -158,11 +173,11 @@ function Zoom({ shot, onClose }: { shot: Shot; onClose: () => void }) {
     };
   }, [onClose]);
   return (
-    <div className="zoom" role="dialog" aria-modal="true" aria-label={shot.caption} onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div className={phone ? "zoom phone" : "zoom"} role="dialog" aria-modal="true" aria-label={shot.caption} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="zoom-bar">
         <span>{shot.caption}</span>
         <button ref={closeRef} type="button" onClick={onClose} aria-label="Close the screenshot">
-          ✕
+          <X size={18} strokeWidth={1.5} aria-hidden="true" />
         </button>
       </div>
       <div className="zoom-scroll" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -220,7 +235,7 @@ export default function ProjectPage({ project: p }: { project: Project }) {
     let live = true;
     const ctx = gsap.context(() => {
       if (fromNext) gsap.from(q(".pp-wrap"), { x: 70 * dir, opacity: 0, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" });
-      gsap.from(q(".pp-hero > :not(h1)"), { y: 18, opacity: 0, duration: 0.6, stagger: 0.07, delay: fromNext ? 0.3 : 0.25, ease: "power3.out", clearProps: "transform,opacity" });
+      gsap.from(q(".pp-hero > :not(h1)"), { y: 12, opacity: 0, duration: 0.6, stagger: 0.07, delay: fromNext ? 0.3 : 0.25, ease: "power3.out", clearProps: "transform,opacity" });
       gsap.from(q(".pp-status, .pp-bar .dot"), { opacity: 0, duration: 0.4, delay: 0.2 });
       // the title: hidden until the fonts are in, then it rises letter by letter (below)
       gsap.set(q(".pp-hero h1"), { autoAlpha: 0 });
@@ -228,19 +243,12 @@ export default function ProjectPage({ project: p }: { project: Project }) {
       const rise = (el: Element, vars: gsap.TweenVars, edge = false) =>
         onView(el, gsap.from(el, { ...vars, paused: true }), edge);
       // the showcase uses visibility too: an iframe can paint through its parent's opacity
-      q(".showcase").forEach((el) => rise(el, { y: 24, autoAlpha: 0, duration: 0.6, ease: "power3.out", clearProps: "transform,opacity,visibility" }, true));
-      q(".pp-part > h2, .pp-part > p").forEach((el) => rise(el, { y: 24, opacity: 0, duration: 0.6, ease: "power3.out", clearProps: "transform,opacity" }));
-      q(".pp-links, .pp-pager").forEach((el) => rise(el, { y: 18, opacity: 0, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" }, true));
-      // screenshots: wiped in from the top, settling as they land
-      q(".pp-shots figure").forEach((f, k) => {
-        const tl = gsap.timeline({ paused: true, delay: (k % 2) * 0.1 });
-        tl.from(f.querySelector("img"), { clipPath: "inset(0 0 100% 0 round 10px)", scale: 1.04, duration: 0.8, ease: "power3.inOut", clearProps: "clipPath,transform" })
-          .from(f.querySelector("figcaption"), { opacity: 0, y: 6, duration: 0.35, clearProps: "transform,opacity" }, "-=0.25");
-        onView(f, tl);
-      });
-      // what you can do, and how it works: one after another
-      q(".feats").forEach((fl) => onView(fl, gsap.from(fl.children, { y: 16, opacity: 0, duration: 0.45, stagger: 0.06, ease: "power2.out", clearProps: "transform,opacity", paused: true })));
-      q(".flow").forEach((fl) => onView(fl, gsap.from(fl.children, { x: -16, opacity: 0, duration: 0.45, stagger: 0.14, ease: "power2.out", clearProps: "transform,opacity", paused: true })));
+      // one reveal everywhere: a short fade and rise
+      const up = { y: 12, opacity: 0, duration: 0.45, ease: "power3.out", clearProps: "transform,opacity" };
+      q(".showcase").forEach((el) => rise(el, { ...up, autoAlpha: 0, clearProps: "transform,opacity,visibility" }, true));
+      q(".pp-part > h2, .pp-part > p, .pp-shots figure").forEach((el) => rise(el, up));
+      q(".pp-links, .pp-pager").forEach((el) => rise(el, up, true));
+      q(".feats, .feats-more, .flow").forEach((fl) => onView(fl, gsap.from(fl.children, { ...up, stagger: 0.05, paused: true })));
       // Bionic Reading: the bolding sweeps across the paragraph
       q(".bionic").forEach((b) => onView(b, gsap.from(b.querySelectorAll("p.on b"), { color: "var(--pm)", duration: 0.3, stagger: 0.025, ease: "none", clearProps: "color", paused: true })));
     }, root);
@@ -292,7 +300,8 @@ export default function ProjectPage({ project: p }: { project: Project }) {
       <ThemeToggle />
       <header className="pp-bar">
         <Link className="pp-back" href="/learning" onClick={back}>
-          ← Learning
+          <ArrowLeft size={16} strokeWidth={1.5} aria-hidden="true" />
+          Learning
         </Link>
         <span className={`dot ${p.state === "running" ? "run" : "ok"}`} aria-hidden="true" />
         {p.status && <span className="pp-status">{p.status}</span>}
@@ -333,7 +342,7 @@ export default function ProjectPage({ project: p }: { project: Project }) {
         )}
 
         {p.shots && (
-          <div className={`pp-shots pp-in n${p.shots.length}`}>
+          <div className={`pp-shots pp-in n${p.shots.length}${p.phoneShots ? " phone" : ""}`}>
             {p.shots.map((s) => (
               <figure key={s.src}>
                 <button type="button" className="shot" onClick={() => setZoom(s)} aria-label={`View larger: ${s.caption}`}>
@@ -386,7 +395,8 @@ export default function ProjectPage({ project: p }: { project: Project }) {
           <div className="pp-links pp-in">
             {p.links?.map((l) => (
               <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">
-                {l.label} ↗
+                {l.label}
+                <ArrowUpRight size={16} strokeWidth={1.5} aria-hidden="true" />
               </a>
             ))}
             {p.credit && <p className="pp-credit">{p.credit}</p>}
@@ -396,15 +406,21 @@ export default function ProjectPage({ project: p }: { project: Project }) {
         <nav className="pp-pager pp-in" aria-label="Other projects">
           <Link className="prev" href={`/learning/${prev.slug}`} onClick={step(prev, -1)}>
             <span>Previous</span>
-            <b>← {prev.title}</b>
+            <b>
+              <ArrowLeft size={18} strokeWidth={1.5} aria-hidden="true" />
+              {prev.title}
+            </b>
           </Link>
           <Link className="next" href={`/learning/${next.slug}`} onClick={step(next, 1)}>
             <span>Next</span>
-            <b>{next.title} →</b>
+            <b>
+              {next.title}
+              <ArrowRight size={18} strokeWidth={1.5} aria-hidden="true" />
+            </b>
           </Link>
         </nav>
       </div>
-      {zoom && <Zoom shot={zoom} onClose={() => setZoom(null)} />}
+      {zoom && <Zoom shot={zoom} phone={p.phoneShots} onClose={() => setZoom(null)} />}
     </main>
   );
 }

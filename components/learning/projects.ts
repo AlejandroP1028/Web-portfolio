@@ -27,6 +27,7 @@ export type Project = {
   hard?: { title: string; body: string[] };
   extra?: { title: string; body: string[] }[];
   shots?: Shot[];
+  phoneShots?: boolean; // the shots are portrait phone screens
   demo?: "showcase" | "bionic";
   links?: { label: string; href: string }[];
   credit?: string;
@@ -36,7 +37,7 @@ export const PROJECTS: Project[] = [
   {
     slug: "agent-pill",
     title: "Agent Pill",
-    line: "A pill that floats over every window and shows what Claude Code is doing.",
+    line: "A pill that floats over every window and shows what Claude Code is doing",
     state: "running",
     status: "in use every day",
     when: "Nov 2026",
@@ -76,9 +77,36 @@ export const PROJECTS: Project[] = [
     demo: "showcase",
   },
   {
+    slug: "rouse",
+    title: "Rouse",
+    line: "An alarm you can't turn off until you've solved something.",
+    state: "running",
+    status: "being built",
+    when: "since Aug 2026",
+    stack: ["React Native", "Expo", "TypeScript", "Zustand"],
+    role: "Solo",
+    intro: [
+      "Each alarm comes with a mission: a math problem, a memory grid, a phrase to type, or shaking the phone. The alarm keeps ringing until it's done. A few minutes later, an optional Wake Check makes sure I didn't just go back to sleep.",
+      "It's my first mobile app, and I'm using it to learn React Native, Expo and how Android handles alarms. It's still early, so these are the main screens, not the finished app.",
+    ],
+    why: [
+      "It was inspired by Alarmy. I liked the idea, but I got annoyed by the paywall, so I'm making my own.",
+    ],
+    phoneShots: true,
+    shots: [
+      { src: "rouse-alarms", alt: "The alarm list: the next wake-up at 6:30 on a dark card, then three alarms with their missions and toggles", caption: "Alarms" },
+      { src: "rouse-edit-alarm", alt: "Editing an alarm: a large 6:30 time picker, repeat days, and rows for label, sound, snooze, mission and Wake Check", caption: "Editing an alarm" },
+      { src: "rouse-mission-picker", alt: "Choosing a mission: Math, Memory, Typing and Shake, with a difficulty switch", caption: "Picking a mission" },
+      { src: "rouse-math", alt: "The math mission at 6:30: a sum to solve with an on-screen number pad", caption: "Math mission" },
+      { src: "rouse-memory-memorise", alt: "The memory mission: five yellow squares lit on a 4 by 4 grid", caption: "Memory: remember the squares" },
+      { src: "rouse-memory-recall", alt: "The memory mission: tapping back the squares, 3 of 5 found", caption: "Memory: tap them back" },
+      { src: "rouse-wake-check", alt: "Wake Check: \"Still up?\" with a shake-to-confirm bar under a rising sun", caption: "Wake Check" },
+    ],
+  },
+  {
     slug: "rtu-queueing-system",
     title: "RTU Queueing System",
-    line: "A paperless queue for the MIS office at RTU.",
+    line: "A paperless queue for the MIS office at RTU",
     state: "done",
     when: "Mar to Sep 2025",
     stack: ["Next.js", "Socket.IO", "Prisma", "MySQL", "Zustand"],
@@ -154,7 +182,7 @@ export const PROJECTS: Project[] = [
   {
     slug: "bionic-reading",
     title: "Bionic Reading",
-    line: "A browser extension that bolds the start of every word.",
+    line: "A browser extension that bolds the start of every word",
     state: "done",
     status: "made for myself",
     when: "Jun 2025",
@@ -169,7 +197,7 @@ export const PROJECTS: Project[] = [
   {
     slug: "animation-sandbox",
     title: "Animation Sandbox",
-    line: "Where I put animation ideas.",
+    line: "Where I put animation ideas",
     state: "running",
     status: "keeps growing",
     when: "since May 2026",

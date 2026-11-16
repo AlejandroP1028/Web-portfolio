@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, type MouseEvent } from "react";
 import gsap from "gsap";
+import { ArrowRight, X } from "lucide-react";
 import { SplitText } from "gsap/SplitText";
 import { sans, mono, hand } from "../landing/fonts";
 import { NOW, PROJECTS } from "./projects";
@@ -52,30 +53,14 @@ export default function LearningIndex() {
       if (!live) return;
       ctx.add(() => {
         gsap.set(q(".lp-in"), { autoAlpha: 1 });
-        const title = SplitText.create(q(".lp-head h1"), { type: "chars" });
         const prompt = SplitText.create(q(".lp-prompt .words"), { type: "words,chars", mask: "words" });
-        const sub = SplitText.create(q(".lp-sub"), { type: "words" });
-        const nowH = SplitText.create(q(".lp-now h2"), { type: "chars", mask: "chars" });
-        const nowItems = SplitText.create(q(".lp-now li span"), { type: "chars" });
         // the masks clip at the line box: give descenders (g, y) room below it
-        gsap.set([...prompt.masks, ...nowH.masks], { paddingBottom: "0.2em", marginBottom: "-0.2em" });
+        gsap.set(prompt.masks, { paddingBottom: "0.2em", marginBottom: "-0.2em" });
         const tl = gsap.timeline({ delay: fromProj ? 0.35 : 0.05, defaults: { ease: "power3.out" } });
-        // the header: the dot pops, "Learning" types in, the count fades up
-        tl.from(q(".lp-head .dot"), { scale: 0, duration: 0.5, ease: "back.out(3)" })
-          .from(title.chars, { opacity: 0, duration: 0.01, stagger: 0.045 }, "<0.05")
-          .from(q(".lp-count, .lp-close"), { opacity: 0, y: -4, duration: 0.4, stagger: 0.06 }, "<0.15")
-          // the heading rises letter by letter out of its mask, after the caret
-          .from(q(".lp-prompt .caret"), { opacity: 0, x: -8, duration: 0.3 }, 0.2)
-          .from(prompt.chars, { yPercent: 115, rotate: 8, duration: 0.7, stagger: 0.022 }, 0.28)
-          .from(sub.words, { opacity: 0, y: 6, duration: 0.45, stagger: 0.02 }, 0.65)
-          // the projects come in like conversations arriving in the pill
-          .from(q(".lp-list li"), { y: 18, opacity: 0, duration: 0.55, stagger: 0.075 }, 0.8)
-          .from(q(".lp-list .dot"), { scale: 0, duration: 0.45, stagger: 0.075, ease: "back.out(3)" }, 0.95)
-          .from(q(".lp-list .lp-go"), { x: -8, opacity: 0, duration: 0.4, stagger: 0.075 }, 1.05)
-          // learning now: the heading rises, each item types itself out
-          .from(nowH.chars, { yPercent: 110, duration: 0.5, stagger: 0.03 }, 1.35)
-          .from(q(".lp-now li"), { opacity: 0, duration: 0.2, stagger: 0.25 }, 1.6)
-          .from(nowItems.chars, { opacity: 0, duration: 0.01, stagger: 0.03 }, 1.6);
+        // the heading rises letter by letter out of its mask; everything else is one short fade and rise
+        tl.from(q(".lp-head, .lp-prompt .caret"), { opacity: 0, duration: 0.3 })
+          .from(prompt.chars, { yPercent: 115, rotate: 8, duration: 0.7, stagger: 0.022 }, 0.1)
+          .from(q(".lp-sub, .lp-list li, .lp-now"), { y: 8, opacity: 0, duration: 0.4, stagger: 0.05 }, 0.45);
       });
     });
     return () => {
@@ -131,7 +116,7 @@ export default function LearningIndex() {
           <h1>Learning</h1>
           <span className="lp-count">{PROJECTS.length} projects</span>
           <Link className="lp-close" href="/" onClick={back} aria-label="Back to the start">
-            ✕
+            <X size={16} strokeWidth={1.5} aria-hidden="true" />
           </Link>
         </header>
 
@@ -152,7 +137,7 @@ export default function LearningIndex() {
                   <span className="lp-meta">
                     {p.status ? `${p.status} · ${p.when}` : p.when}
                   </span>
-                  <span className="lp-go" aria-hidden="true">→</span>
+                  <span className="lp-go" aria-hidden="true"><ArrowRight size={16} strokeWidth={1.5} /></span>
                 </Link>
               </li>
             ))}
@@ -162,9 +147,7 @@ export default function LearningIndex() {
             <h2 id="now">learning now</h2>
             <ul>
               {NOW.map((n) => (
-                <li key={n}>
-                  <span>{n}</span>
-                </li>
+                <li key={n}>{n}</li>
               ))}
             </ul>
           </section>
