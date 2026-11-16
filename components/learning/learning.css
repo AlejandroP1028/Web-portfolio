@@ -504,6 +504,16 @@
   border-radius: 14px;
   background: #1e2026;
 }
+.showcase img,
+.showcase-wait {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 480 / 689;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  background: #1e2026;
+}
 .showcase figcaption {
   display: flex;
   align-items: center;

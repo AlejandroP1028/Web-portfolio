@@ -47,13 +47,24 @@ const CHAPTERS: Record<string, string> = {
   themes: "Themes for the pills, the panel and the terminal.",
 };
 
+// Phones get recordings of each chapter instead of the live app (it's a desktop app, and too
+// heavy for a phone). Lengths match the tour's chapters (agent-pill src/lib/tour.ts).
+const GIF_MS: Record<string, number> = { states: 9000, panel: 11000, permission: 10000, groups: 8000, dock: 9000, themes: 10000 };
+const PHONE = "(max-width: 760px)";
+const say = (msg: object) => window.postMessage({ source: "agent-pill-showcase", ...msg }, "*");
+
 /** The real Agent Pill interface, running a scripted tour on a pretend desktop. */
 function Showcase() {
   const [caption, setCaption] = useState("Every pill shows what its conversation is doing right now.");
   const [paused, setPaused] = useState(false);
+  // null until mounted, so the server render loads neither the app nor a GIF
+  const [phone, setPhone] = useState<boolean | null>(null);
+  const [gif, setGif] = useState("states");
+  useEffect(() => setPhone(matchMedia(PHONE).matches), []);
   useEffect(() => {
     const on = (e: MessageEvent) => {
       const m = e.data;
+      if (m?.target === "agent-pill-showcase" && m.type === "goto" && GIF_MS[m.id]) setGif(m.id); // "show me" on a phone
       if (!m || m.source !== "agent-pill-showcase") return;
       if (m.type === "chapter") {
         setCaption(CHAPTERS[m.id] ?? String(m.id));
@@ -65,9 +76,22 @@ function Showcase() {
     window.addEventListener("message", on);
     return () => window.removeEventListener("message", on);
   }, []);
+  // on a phone: announce the chapter like the app does, then move on when its recording ends
+  useEffect(() => {
+    if (!phone) return;
+    say({ type: "chapter", id: gif });
+    const ids = Object.keys(GIF_MS);
+    const t = setTimeout(() => setGif(ids[(ids.indexOf(gif) + 1) % ids.length]), GIF_MS[gif]);
+    return () => clearTimeout(t);
+  }, [phone, gif]);
   return (
     <figure className="showcase pp-in">
-      <iframe src="/learning/agent-pill/index.html?showcase" title="Agent Pill running a short tour; you can take over and use it" />
+      {phone === false && <iframe src="/learning/agent-pill/index.html?showcase" title="Agent Pill running a short tour; you can take over and use it" />}
+      {phone && (
+        // eslint-disable-next-line @next/next/no-img-element -- an animated GIF, next/image would freeze it
+        <img key={gif} src={`/learning/pill/${gif}.gif`} alt={`Agent Pill: ${CHAPTERS[gif]}`} width={480} height={689} />
+      )}
+      {phone === null && <div className="showcase-wait" />}
       <figcaption>
         <span className={`dot ${paused ? "wait" : "run"}`} aria-hidden="true" />
         <span aria-live="polite">{paused ? "It's yours. Click around; the tour picks up again when you stop." : caption}</span>
@@ -91,9 +115,10 @@ function Features({ items }: { items: Feature[] }) {
     return () => window.removeEventListener("message", on);
   }, []);
   const show = (id: string) => {
-    const frame = document.querySelector<HTMLIFrameElement>(".showcase iframe");
+    const frame = document.querySelector<HTMLElement>(".showcase iframe, .showcase img");
     if (!frame) return;
-    frame.contentWindow?.postMessage({ target: "agent-pill-showcase", type: "goto", id }, "*");
+    // the live app, or on a phone the Showcase's recordings
+    ((frame as HTMLIFrameElement).contentWindow ?? window).postMessage({ target: "agent-pill-showcase", type: "goto", id }, "*");
     setNow(id);
     const r = frame.getBoundingClientRect();
     if (r.top < 60 || r.bottom > innerHeight) frame.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" });
