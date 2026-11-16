@@ -4,16 +4,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import { sans, mono, hand } from "../landing/fonts";
 import ThemeToggle from "../landing/ThemeToggle";
 import Bionic from "./Bionic";
-import { PROJECTS, type Feature, type Project } from "./projects";
+import { PROJECTS, type Feature, type Project, type Shot } from "./projects";
 import { FROM_PROJECT_KEY } from "./panel";
 
-gsap.registerPlugin(ScrollTrigger, SplitText);
-const NEXT_KEY = "learning-next"; // arriving from the previous project's "Next" link
+gsap.registerPlugin(SplitText);
+const NEXT_KEY = "learning-next"; // arriving from a neighbour's Next ("next") or Previous ("prev") link
 import "../landing/landing.css";
 import "./learning.css";
 
@@ -116,17 +115,54 @@ function Features({ items }: { items: Feature[] }) {
   );
 }
 
+/**
+ * A screenshot at a readable size: full screen, pannable when it's wider than the screen
+ * (on phones the captures are desktop-sized). Closed with the button, Esc, or a tap outside.
+ */
+function Zoom({ shot, onClose }: { shot: Shot; onClose: () => void }) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    addEventListener("keydown", onKey);
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
+    };
+  }, [onClose]);
+  return (
+    <div className="zoom" role="dialog" aria-modal="true" aria-label={shot.caption} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="zoom-bar">
+        <span>{shot.caption}</span>
+        <button ref={closeRef} type="button" onClick={onClose} aria-label="Close the screenshot">
+          ✕
+        </button>
+      </div>
+      <div className="zoom-scroll" onClick={(e) => e.target === e.currentTarget && onClose()}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={`/learning/${shot.src}.webp`} alt={shot.alt} />
+      </div>
+    </div>
+  );
+}
 export default function ProjectPage({ project: p }: { project: Project }) {
   const router = useRouter();
   const rootRef = useRef<HTMLElement>(null);
   const busy = useRef(false);
+  const [zoom, setZoom] = useState<Shot | null>(null);
   // read once per visit (React runs effects twice in development)
-  const fromNextRef = useRef<boolean | null>(null);
+  // +1: arrived via Next (slides in from the right), -1: via Previous (from the left), 0: neither
+  const fromNextRef = useRef<number | null>(null);
   if (fromNextRef.current === null && typeof window !== "undefined") {
-    try { fromNextRef.current = !!sessionStorage.getItem(NEXT_KEY); } catch { fromNextRef.current = false; }
+    let v: string | null = null;
+    try { v = sessionStorage.getItem(NEXT_KEY); } catch {}
+    fromNextRef.current = v === "next" ? 1 : v === "prev" ? -1 : 0;
   }
   const i = PROJECTS.findIndex((x) => x.slug === p.slug);
   const next = PROJECTS[(i + 1) % PROJECTS.length];
+  const prev = PROJECTS[(i - 1 + PROJECTS.length) % PROJECTS.length];
 
   // Arriving: the hero rises in (or, from the previous project's Next link, the page slides
   // in from the right). Everything below reveals as it scrolls into view. With reduced
@@ -135,70 +171,85 @@ export default function ProjectPage({ project: p }: { project: Project }) {
     if (reduced()) return;
     const root = rootRef.current!;
     const q = <T extends Element>(s: string) => Array.from(root.querySelectorAll<T>(s));
-    const fromNext = !!fromNextRef.current;
+    const dir = fromNextRef.current ?? 0;
+    const fromNext = dir !== 0;
     try { sessionStorage.removeItem(NEXT_KEY); } catch {}
+
+    // Scroll reveals: each animation is created paused (so it already shows its start state)
+    // and played once its element comes into view. IntersectionObserver instead of
+    // ScrollTrigger: no scroll maths to refresh, which is what failed on phones.
+    const plays = new Map<Element, () => void>();
+    const seen: IntersectionObserverCallback = (entries, obs) =>
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        obs.unobserve(e.target);
+        plays.get(e.target)?.();
+      });
+    const io = new IntersectionObserver(seen, { rootMargin: "0px 0px -10% 0px" });
+    const ioEdge = new IntersectionObserver(seen); // for the last things on the page: as soon as they show
+    const onView = (el: Element, anim: gsap.core.Animation, edge = false) => {
+      plays.set(el, () => anim.play());
+      (edge ? ioEdge : io).observe(el);
+    };
+
+    let live = true;
     const ctx = gsap.context(() => {
-      if (fromNext) gsap.from(q(".pp-wrap"), { x: 70, opacity: 0, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" });
-      // the title rises letter by letter out of a mask; the rest of the hero follows
-      const h1 = q(".pp-hero h1");
-      gsap.set(h1, { autoAlpha: 0 });
-      document.fonts.ready.then(() =>
-        ctx.add(() => {
-          gsap.set(h1, { autoAlpha: 1 });
-          const split = SplitText.create(h1, { type: "words,chars", mask: "words" });
-          gsap.set(split.masks, { paddingBottom: "0.14em", marginBottom: "-0.14em" }); // room for descenders
-          gsap.from(split.chars, { yPercent: 115, rotate: 6, duration: 0.75, stagger: 0.02, delay: fromNext ? 0.12 : 0.05, ease: "power3.out" });
-        }),
-      );
+      if (fromNext) gsap.from(q(".pp-wrap"), { x: 70 * dir, opacity: 0, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" });
       gsap.from(q(".pp-hero > :not(h1)"), { y: 18, opacity: 0, duration: 0.6, stagger: 0.07, delay: fromNext ? 0.3 : 0.25, ease: "power3.out", clearProps: "transform,opacity" });
       gsap.from(q(".pp-status, .pp-bar .dot"), { opacity: 0, duration: 0.4, delay: 0.2 });
+      // the title: hidden until the fonts are in, then it rises letter by letter (below)
+      gsap.set(q(".pp-hero h1"), { autoAlpha: 0 });
 
-      const reveal = (el: Element, vars: gsap.TweenVars, start = "top 86%") =>
-        gsap.from(el, { ...vars, scrollTrigger: { trigger: el, start, once: true } });
-
-      // sections and the bits around them: a short rise
+      const rise = (el: Element, vars: gsap.TweenVars, edge = false) =>
+        onView(el, gsap.from(el, { ...vars, paused: true }), edge);
       // the showcase uses visibility too: an iframe can paint through its parent's opacity
-      q(".showcase").forEach((el) => reveal(el, { y: 24, autoAlpha: 0, duration: 0.6, ease: "power3.out", clearProps: "transform,opacity,visibility" }, "top 95%"));
-      q(".pp-part > h2, .pp-part > p").forEach((el) =>
-        reveal(el, { y: 24, opacity: 0, duration: 0.6, ease: "power3.out", clearProps: "transform,opacity" }),
-      );
-      // the last things on the page may never get far up the screen: they go as soon as they show
-      q(".pp-links, .pp-next").forEach((el) =>
-        reveal(el, { y: 18, opacity: 0, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" }, "top bottom-=20"),
-      );
+      q(".showcase").forEach((el) => rise(el, { y: 24, autoAlpha: 0, duration: 0.6, ease: "power3.out", clearProps: "transform,opacity,visibility" }, true));
+      q(".pp-part > h2, .pp-part > p").forEach((el) => rise(el, { y: 24, opacity: 0, duration: 0.6, ease: "power3.out", clearProps: "transform,opacity" }));
+      q(".pp-links, .pp-pager").forEach((el) => rise(el, { y: 18, opacity: 0, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity" }, true));
       // screenshots: wiped in from the top, settling as they land
       q(".pp-shots figure").forEach((f, k) => {
-        const tl = gsap.timeline({ scrollTrigger: { trigger: f, start: "top 88%", once: true }, delay: (k % 2) * 0.1 });
+        const tl = gsap.timeline({ paused: true, delay: (k % 2) * 0.1 });
         tl.from(f.querySelector("img"), { clipPath: "inset(0 0 100% 0 round 10px)", scale: 1.04, duration: 0.8, ease: "power3.inOut", clearProps: "clipPath,transform" })
           .from(f.querySelector("figcaption"), { opacity: 0, y: 6, duration: 0.35, clearProps: "transform,opacity" }, "-=0.25");
+        onView(f, tl);
       });
-      // what you can do: the cards come in one after another
-      q(".feats").forEach((fl) =>
-        gsap.from(fl.children, { y: 16, opacity: 0, duration: 0.45, stagger: 0.06, ease: "power2.out", clearProps: "transform,opacity", scrollTrigger: { trigger: fl, start: "top 88%", once: true } }),
-      );
-      // how it works: the steps arrive one after another, left to right
-      q(".flow").forEach((fl) =>
-        gsap.from(fl.children, { x: -16, opacity: 0, duration: 0.45, stagger: 0.14, ease: "power2.out", clearProps: "transform,opacity", scrollTrigger: { trigger: fl, start: "top 86%", once: true } }),
-      );
+      // what you can do, and how it works: one after another
+      q(".feats").forEach((fl) => onView(fl, gsap.from(fl.children, { y: 16, opacity: 0, duration: 0.45, stagger: 0.06, ease: "power2.out", clearProps: "transform,opacity", paused: true })));
+      q(".flow").forEach((fl) => onView(fl, gsap.from(fl.children, { x: -16, opacity: 0, duration: 0.45, stagger: 0.14, ease: "power2.out", clearProps: "transform,opacity", paused: true })));
       // Bionic Reading: the bolding sweeps across the paragraph
-      q(".bionic").forEach((b) =>
-        gsap.from(b.querySelectorAll("p.on b"), { color: "var(--pm)", duration: 0.3, stagger: 0.025, ease: "none", clearProps: "color", scrollTrigger: { trigger: b, start: "top 85%", once: true } }),
-      );
+      q(".bionic").forEach((b) => onView(b, gsap.from(b.querySelectorAll("p.on b"), { color: "var(--pm)", duration: 0.3, stagger: 0.025, ease: "none", clearProps: "color", paused: true })));
     }, root);
-    return () => ctx.revert();
+
+    document.fonts.ready.then(() => {
+      if (!live) return;
+      ctx.add(() => {
+        const h1 = q(".pp-hero h1");
+        gsap.set(h1, { autoAlpha: 1 });
+        const split = SplitText.create(h1, { type: "words,chars", mask: "words" });
+        gsap.set(split.masks, { paddingBottom: "0.14em", marginBottom: "-0.14em" }); // room for descenders
+        gsap.from(split.chars, { yPercent: 115, rotate: 6, duration: 0.75, stagger: 0.02, delay: fromNext ? 0.12 : 0.05, ease: "power3.out" });
+      });
+    });
+
+    return () => {
+      live = false;
+      io.disconnect();
+      ioEdge.disconnect();
+      ctx.revert();
+    };
   }, [p.slug]);
 
-  // the Next link: this project slides out to the left, the next slides in from the right
-  const goNext = (e: MouseEvent<HTMLAnchorElement>) => {
+  // Next and Previous: this project slides out one way and its neighbour comes in from the other
+  const step = (to: Project, d: 1 | -1) => (e: MouseEvent<HTMLAnchorElement>) => {
     if (busy.current || reduced() || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     e.preventDefault();
     busy.current = true;
-    try { sessionStorage.setItem(NEXT_KEY, "1"); } catch {}
+    try { sessionStorage.setItem(NEXT_KEY, d === 1 ? "next" : "prev"); } catch {}
     const root = rootRef.current!;
     gsap.to(root.querySelectorAll(".pp-status, .pp-bar .dot"), { opacity: 0, duration: 0.2 });
     gsap.to(root.querySelector(".pp-wrap"), {
-      x: -70, opacity: 0, duration: 0.38, ease: "power2.in",
-      onComplete: () => router.push(`/learning/${next.slug}`),
+      x: -70 * d, opacity: 0, duration: 0.38, ease: "power2.in",
+      onComplete: () => router.push(`/learning/${to.slug}`),
     });
   };
 
@@ -260,8 +311,10 @@ export default function ProjectPage({ project: p }: { project: Project }) {
           <div className={`pp-shots pp-in n${p.shots.length}`}>
             {p.shots.map((s) => (
               <figure key={s.src}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/learning/${s.src}.webp`} alt={s.alt} loading="lazy" />
+                <button type="button" className="shot" onClick={() => setZoom(s)} aria-label={`View larger: ${s.caption}`}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/learning/${s.src}.webp`} alt={s.alt} loading="lazy" />
+                </button>
                 <figcaption>{s.caption}</figcaption>
               </figure>
             ))}
@@ -315,11 +368,18 @@ export default function ProjectPage({ project: p }: { project: Project }) {
           </div>
         )}
 
-        <Link className="pp-next pp-in" href={`/learning/${next.slug}`} onClick={goNext}>
-          <span>Next</span>
-          <b>{next.title} →</b>
-        </Link>
+        <nav className="pp-pager pp-in" aria-label="Other projects">
+          <Link className="prev" href={`/learning/${prev.slug}`} onClick={step(prev, -1)}>
+            <span>Previous</span>
+            <b>← {prev.title}</b>
+          </Link>
+          <Link className="next" href={`/learning/${next.slug}`} onClick={step(next, 1)}>
+            <span>Next</span>
+            <b>{next.title} →</b>
+          </Link>
+        </nav>
       </div>
+      {zoom && <Zoom shot={zoom} onClose={() => setZoom(null)} />}
     </main>
   );
 }
