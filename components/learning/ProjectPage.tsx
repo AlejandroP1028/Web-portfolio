@@ -51,7 +51,7 @@ const CHAPTERS: Record<string, string> = {
 // Phones get recordings of each chapter instead of the live app (it's a desktop app, and too
 // heavy for a phone). Lengths match the tour's chapters (agent-pill src/lib/tour.ts).
 const GIF_MS: Record<string, number> = { states: 9000, panel: 11000, permission: 10000, groups: 8000, dock: 9000, themes: 10000 };
-const PHONE = "(max-width: 760px)";
+const PHONE = "(max-width: 760px), (pointer: coarse) and (max-height: 500px)"; // the second is a phone in landscape
 const say = (msg: object) => window.postMessage({ source: "agent-pill-showcase", ...msg }, "*");
 
 /** The real Agent Pill interface, running a scripted tour on a pretend desktop. */

@@ -548,6 +548,8 @@
 .showcase-wait {
   display: block;
   width: 100%;
+  max-width: calc((100dvh - 48px) * 480 / 689); /* fits a landscape phone's height */
+  justify-self: center;
   height: auto;
   aspect-ratio: 480 / 689;
   border: 1px solid var(--rule);
@@ -689,6 +691,10 @@
   }
   .feats li .dot {
     margin-top: 8px;
+  }
+  .feats button {
+    grid-column: 3;
+    grid-row: 1;
   }
   .feats .body {
     grid-column: 2 / -1;
