@@ -864,3 +864,51 @@
   }
 }
 
+
+/* the 404 page: the Work index's paper; the Agent Pill searches for the page beside the text */
+.nf-grid {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 40px 64px;
+  min-height: calc(100svh - clamp(24px, 6vh, 64px) - 80px);
+}
+.nf-text {
+  display: grid;
+}
+.nf-pill {
+  --stage-h: 240px;
+  width: min(300px, 100vw - 32px);
+  height: 200px;
+  display: grid;
+  place-items: center;
+}
+@media (max-width: 760px) {
+  .nf-grid {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+  }
+  .nf-pill {
+    justify-self: center;
+  }
+}
+.nf-sides {
+  margin-top: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.nf-sides a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1.5px solid var(--ink);
+  border-radius: 10px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+}
+.nf-sides a:hover {
+  background: var(--ink);
+  color: var(--paper);
+}

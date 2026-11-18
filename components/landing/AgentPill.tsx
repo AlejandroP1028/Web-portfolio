@@ -26,7 +26,15 @@ const fmt = (ms: number) => {
  * `override` shows a fixed state and pauses the loop (the intro narrates with it);
  * `open` holds the panel open (the Learning transition grows out of it).
  */
-export default function AgentPill({ override = null, open = false }: { override?: PillOverride; open?: boolean }) {
+export default function AgentPill({
+  override = null,
+  open = false,
+  log,
+}: {
+  override?: PillOverride;
+  open?: boolean;
+  log?: [string, string][]; // the panel's lines, when the page writes its own (the 404 page)
+}) {
   const [k, setK] = useState(0);
   const [clock, setClock] = useState(0);
   const start = useRef(Date.now());
@@ -156,7 +164,7 @@ export default function AgentPill({ override = null, open = false }: { override?
             <span className="time">{fmt(clock)}</span>
           </span>
           <ol className="log">
-            {(override && olog.length ? olog : STEPS.slice(0, k + 1).map((x) => x.log)).map(([cls, text], i) => (
+            {(log ?? (override && olog.length ? olog : STEPS.slice(0, k + 1).map((x) => x.log))).map(([cls, text], i) => (
               <li key={i} className={cls}>
                 {text}
               </li>

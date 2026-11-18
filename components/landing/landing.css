@@ -383,13 +383,13 @@
 
 /* the Agent Pill */
 /* the pill sits at the middle of its stage, and opens into its panel around that centre */
-.landing .pillhold {
+:is(.landing, .nf) .pillhold {
   position: relative;
   display: grid;
   place-items: center;
   width: 100%;
 }
-.landing .pillbox {
+:is(.landing, .nf) .pillbox {
   --c: var(--pill-muted);
   position: relative;
   width: 162px;
@@ -404,12 +404,12 @@
   transition: width 0.32s var(--ease), height 0.32s var(--ease), border-radius 0.32s var(--ease);
 }
 .landing .obj[data-side="learning"]:focus-visible .pillbox,
-.landing .pillbox.open {
+:is(.landing, .nf) .pillbox.open {
   width: min(300px, 100vw - 32px); /* a fixed width: a % here followed the label's width */
   height: min(200px, var(--stage-h, 400px) - 24px);
   border-radius: 16px;
 }
-.landing .pill-head {
+:is(.landing, .nf) .pill-head {
   height: 28px;
   display: flex;
   align-items: center;
@@ -417,41 +417,41 @@
   padding: 0 12px 0 10px;
   white-space: nowrap;
 }
-.landing .dot {
+:is(.landing, .nf) .dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--c);
   flex: none;
 }
-.landing .state {
+:is(.landing, .nf) .state {
   font-weight: 600;
   color: var(--c);
   animation: landing-rise 0.16s ease-out;
 }
-.landing .time {
+:is(.landing, .nf) .time {
   margin-left: auto;
   font-size: 11px;
   color: var(--pill-muted);
   font-variant-numeric: tabular-nums;
 }
-.landing .s-thinking { --c: #8ab4ff; }
-.landing .s-tool { --c: #c3b1ff; }
-.landing .s-waiting { --c: #ffb454; }
-.landing .s-done { --c: #6fd69a; }
-.landing .s-thinking .dot,
-.landing .s-tool .dot {
+:is(.landing, .nf) .s-thinking { --c: #8ab4ff; }
+:is(.landing, .nf) .s-tool { --c: #c3b1ff; }
+:is(.landing, .nf) .s-waiting { --c: #ffb454; }
+:is(.landing, .nf) .s-done { --c: #6fd69a; }
+:is(.landing, .nf) .s-thinking .dot,
+:is(.landing, .nf) .s-tool .dot {
   animation: landing-pulse 1.4s ease-in-out infinite;
 }
-.landing .s-done .dot {
+:is(.landing, .nf) .s-done .dot {
   animation: landing-pop 0.24s var(--ease);
 }
 /* the pill plus its effects, sized to the pill so they line up whatever its width */
-.landing .pillwrap {
+:is(.landing, .nf) .pillwrap {
   position: relative;
   display: inline-grid;
 }
-.landing .ringwrap {
+:is(.landing, .nf) .ringwrap {
   position: absolute;
   inset: -4px;
   border-radius: 18px;
@@ -459,8 +459,8 @@
   opacity: 0;
 }
 /* Done: the bead that runs round the rim, and the drops thrown off at the end */
-.landing .bead,
-.landing .drop {
+:is(.landing, .nf) .bead,
+:is(.landing, .nf) .drop {
   position: absolute;
   width: 5px;
   height: 5px;
@@ -469,17 +469,17 @@
   pointer-events: none;
   opacity: 0;
 }
-.landing .bead {
+:is(.landing, .nf) .bead {
   left: -2.5px;
   top: -2.5px;
   box-shadow: 0 0 6px rgba(111, 214, 154, 0.9);
 }
-.landing .drop {
+:is(.landing, .nf) .drop {
   left: 50%;
   top: 50%;
   margin: -2.5px 0 0 -2.5px;
 }
-.landing .ringwrap.on {
+:is(.landing, .nf) .ringwrap.on {
   opacity: 1;
   box-shadow: 0 0 0 2px #ffb454;
   animation: landing-ring 1.6s ease-in-out infinite;
@@ -487,7 +487,7 @@
 .landing .obj[data-side="learning"]:focus-visible .ringwrap {
   display: none;
 }
-.landing .log {
+:is(.landing, .nf) .log {
   list-style: none;
   margin: 0;
   padding: 6px 14px 12px;
@@ -499,17 +499,17 @@
   transition: opacity 0.2s ease;
 }
 .landing .obj[data-side="learning"]:focus-visible .log,
-.landing .pillbox.open .log {
+:is(.landing, .nf) .pillbox.open .log {
   opacity: 1;
   transition-delay: 0.12s;
 }
-.landing .log li {
+:is(.landing, .nf) .log li {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.landing .log .you { color: var(--pill-text); }
-.landing .log .ask { color: #ffb454; }
+:is(.landing, .nf) .log .you { color: var(--pill-text); }
+:is(.landing, .nf) .log .ask { color: #ffb454; }
 .landing .log .ok { color: #6fd69a; }
 
 /* the grow-from-the-object transition, and the side pages it lands on */
