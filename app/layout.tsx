@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
 import { THEME_BOOT } from "@/components/landing/theme";
 
 const poppins = Poppins({
@@ -60,6 +61,7 @@ export default function RootLayout({
       <body className={poppins.className}>
         <Toaster position="top-right" />
         {children}
+        <Analytics />
       </body>
     </html>
   );
