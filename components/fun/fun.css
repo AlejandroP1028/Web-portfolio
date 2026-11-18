@@ -1,0 +1,91 @@
+/* The Fun page: the Work index's paper (.wk), with each game as a block of screenshots and a few words */
+.fn-game {
+  margin-top: clamp(48px, 8vw, 88px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 24px 40px;
+  align-items: start;
+}
+/* the screenshots of one game, compiled into one block: a big first shot, the rest in a strip under it */
+.fn-shots {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.fn-shots img {
+  width: 100%;
+  display: block;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--line);
+}
+.fn-shots img:first-child {
+  grid-column: 1 / -1;
+  border-radius: 10px;
+}
+.fn-shots.n2 img:not(:first-child),
+.fn-shots.n3 img:not(:first-child) {
+  grid-column: span 2;
+}
+.fn-text {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding-top: 4px;
+}
+.fn-text h2 {
+  margin: 0;
+  font: 400 clamp(1.9rem, 3.4vw, 2.5rem)/1.05 var(--font-landing-hand), "Comic Sans MS", cursive;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+.fn-tag {
+  font: 400 1.2rem/1 var(--font-landing-hand), cursive;
+  color: var(--fun-ink);
+}
+.fn-status {
+  font: 12px/1 var(--mono);
+  color: var(--muted);
+}
+.fn-text p {
+  margin: 4px 0 0;
+  color: var(--ink);
+  line-height: 1.6;
+  max-width: 46ch;
+}
+.fn-text a {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font: 13px/1 var(--mono);
+  color: var(--fun-ink);
+  text-underline-offset: 4px;
+}
+.fn-made-head {
+  margin: clamp(64px, 10vw, 112px) 0 0;
+  padding-top: 24px;
+  border-top: 1.5px solid var(--ink);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.fn-made-head + .fn-game {
+  margin-top: 32px;
+}
+.fn ::selection {
+  background: var(--fun);
+  color: var(--fun-on);
+}
+.fn :focus-visible {
+  outline-color: var(--fun);
+}
+@media (max-width: 760px) {
+  .fn-game {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

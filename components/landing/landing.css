@@ -534,8 +534,8 @@
 .landing .wipe-edge .wipe {
   pointer-events: auto;
 }
-.landing .wipe-edge:has(.wipe[data-side="work"].on),
-.landing.ret-work .wipe-edge {
+.landing .wipe-edge:has(.wipe:is([data-side="work"], [data-side="fun"]).on),
+.landing:is(.ret-work, .ret-fun) .wipe-edge {
   filter: drop-shadow(1.5px 0 0 var(--ink)) drop-shadow(-1.5px 0 0 var(--ink)) drop-shadow(0 1.5px 0 var(--ink)) drop-shadow(0 -1.5px 0 var(--ink));
 }
 .landing .wipe,
@@ -614,7 +614,7 @@
   filter: blur(10px);
   pointer-events: none;
 }
-.landing.ret-fun .wipe { --bgc: var(--fun); }
+.landing.ret-fun .wipe { --bgc: var(--paper); }
 
 /* Work opens onto the landing's own paper (the Work index), so its wipe is paper too */
 [data-side="work"].wipe {
@@ -626,10 +626,10 @@
   --bgc: var(--pill-bg);
   --onc: var(--pill-text);
 }
-[data-side="fun"].wipe,
-.side-page[data-side="fun"] {
-  --bgc: var(--fun);
-  --onc: var(--fun-on);
+/* Fun opens onto paper too (the Fun page) */
+[data-side="fun"].wipe {
+  --bgc: var(--paper);
+  --onc: var(--ink);
 }
 
 .side-page {
