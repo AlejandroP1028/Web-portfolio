@@ -290,10 +290,12 @@ export default function ProjectPage({ project: p, side = "learning" }: { project
 
   // back to the index: the page's contents leave, then the index shrinks the panel into place
   const back = (e: MouseEvent<HTMLAnchorElement>) => {
-    try { sessionStorage.setItem(FROM_PROJECT_KEY, "1"); } catch {}
     if (busy.current || reduced() || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     e.preventDefault();
     busy.current = true;
+    // tells the Learning index to shrink in from the full screen. Only when it really is the next
+    // page: a leftover flag made the next landing → Learning open start full-screen.
+    if (side === "learning") try { sessionStorage.setItem(FROM_PROJECT_KEY, "1"); } catch {}
     gsap.to(rootRef.current!.querySelectorAll(".pp-bar, .pp-wrap"), { opacity: 0, duration: 0.16, onComplete: () => router.push(`/${side}`) });
   };
 
