@@ -32,10 +32,12 @@ type Scene = { setHover(side: Side | null): void; target(side: "work" | "fun"): 
 
 const NAME = HEADLINE; // the drawn headline is a handwriting trace; regenerate it to change the words
 const RETURN_KEY = "landing-return";
+const INTRO_KEY = "landing-intro-seen"; // the intro plays once per browser session
 /** Intro playback speed: 1 is about 8s; 1.25 is faster, 0.8 slower. */
 const INTRO_SPEED = 1.8;
-// Module state survives client-side navigation but not a refresh, so the intro plays on
-// every full page load and the way back from a side page plays instead after in-app navigation.
+// Module state survives client-side navigation but not a refresh: the intro can only play on a
+// full page load (the first one this session), and the way back from a side page plays instead
+// after in-app navigation.
 let loadedOnce = false;
 const FULL = "inset(0px 0px 0px 0px round 0px)";
 const BACKDROP_BLUR = 10; // px; landing.css uses the same for .is-backdrop and the way back from Learning
@@ -57,14 +59,15 @@ const rectOf = (el: Element): Target => {
 // Runs while the HTML is parsed (full page loads only), before first paint, so the intro
 // starts from its first frame instead of flashing the finished page.
 const BOOT = `(function(){try{sessionStorage.removeItem('${RETURN_KEY}')}catch(e){}
-if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.currentScript.parentElement.classList.add('is-intro')})()`;
+var seen=null;try{seen=sessionStorage.getItem('${INTRO_KEY}')}catch(e){}
+if(!seen&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.currentScript.parentElement.classList.add('is-intro')})()`;
 
-/** What this visit plays: the intro (every full page load), the way back from a side page, or nothing. */
+/** What this visit plays: the intro (first full page load of the session), the way back from a side page, or nothing. */
 function pickMode(): { intro: boolean; ret: Side | null } {
   if (typeof window === "undefined" || reduced()) return { intro: false, ret: null };
   if (!loadedOnce) {
     store.del(RETURN_KEY);
-    return { intro: true, ret: null };
+    return { intro: !store.get(INTRO_KEY), ret: null };
   }
   return { intro: false, ret: store.get(RETURN_KEY) as Side | null };
 }
@@ -163,6 +166,7 @@ export default function Landing() {
   // The intro: the Agent Pill narrates while the page builds itself (about 8s); any input skips it.
   useLayoutEffect(() => {
     if (!mode.intro) return;
+    store.set(INTRO_KEY, "1");
     const q = gsap.utils.selector(rootRef.current);
     const typed = q(".typed")[0] as HTMLElement;
     const hold = q('.obj[data-side="learning"] .pillhold')[0];
@@ -534,7 +538,10 @@ export default function Landing() {
         </div>
 
       </main>
-      <div className="wipe" ref={wipeRef} aria-hidden="true" />
+      {/* the edge draws an ink outline around the wipe's clipped shape (only for Work, whose wipe is paper on paper) */}
+      <div className="wipe-edge">
+        <div className="wipe" ref={wipeRef} aria-hidden="true" />
+      </div>
     </div>
   );
 }

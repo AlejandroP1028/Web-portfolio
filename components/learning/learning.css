@@ -638,6 +638,7 @@
   min-width: 0;
 }
 .pp-pager .next {
+  grid-column: 2;
   text-align: right;
 }
 .pp-pager .next b {
@@ -711,3 +712,155 @@
     animation: none;
   }
 }
+
+/* ---------- Work ---------- */
+/* A Work project page is the same page on the landing's paper, with Work blue where
+   Learning uses the pill's purple. */
+.pp.work {
+  --pt: var(--ink);
+  --pm: var(--muted);
+  --rule: var(--line);
+  --raise: color-mix(in srgb, var(--ink) 5%, var(--paper));
+  --run: var(--work);
+  background: var(--paper);
+}
+.pp.work .theme-toggle {
+  color: var(--ink);
+}
+.pp.work .pp-bar {
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+}
+.pp.work ::selection {
+  background: var(--work);
+  color: var(--work-on);
+}
+
+/* The Work index: on the landing's paper, with Work blue for the details */
+.wk {
+  --on: var(--ink);
+  --on-dim: var(--muted);
+  --on-rule: var(--line);
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--paper);
+  color: var(--on);
+  font-family: var(--sans);
+  padding-block: clamp(24px, 6vh, 64px) 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wk .theme-toggle {
+  color: var(--on);
+}
+.wk ::selection {
+  background: var(--work);
+  color: var(--work-on);
+}
+.wk a {
+  color: inherit;
+}
+.wk :focus-visible {
+  outline: 2px solid var(--work);
+  outline-offset: 3px;
+}
+.wk-inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  display: grid;
+}
+.wk-back {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font: 13px/1 var(--mono);
+  color: var(--on-dim) !important;
+  text-decoration: none;
+}
+.wk-back:hover {
+  color: var(--on) !important;
+}
+.wk h1 {
+  margin: 24px 0 0;
+  font-weight: 600;
+  font-size: clamp(3.4rem, 11vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+.wk-sub {
+  margin: 20px 0 0;
+  max-width: 52ch;
+  font-size: 1.15rem;
+  line-height: 1.5;
+  color: var(--on-dim);
+}
+.wk-group {
+  margin-top: clamp(48px, 8vw, 72px);
+}
+.wk-group h2 {
+  margin: 0 0 12px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.wk-group ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1.5px solid var(--on);
+}
+.wk-group li {
+  border-bottom: 1px solid var(--on-rule);
+}
+.wk-row {
+  display: grid;
+  grid-template-columns: minmax(0, 17rem) minmax(0, 1fr) 18px;
+  align-items: baseline;
+  gap: 6px 24px;
+  padding: 20px 4px;
+  text-decoration: none;
+}
+.wk-title {
+  font-size: 1.15rem;
+  font-weight: 500;
+}
+.wk-line {
+  color: var(--on-dim);
+  line-height: 1.45;
+}
+.wk-meta {
+  grid-column: 2;
+  font: 12px/1.5 var(--mono);
+  color: var(--work-ink);
+}
+.wk-go {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  align-self: center;
+  color: var(--work-ink);
+  transition: transform 0.2s var(--ease);
+}
+.wk-row:hover .wk-go {
+  transform: translateX(4px);
+}
+.wk-row:hover .wk-title {
+  color: var(--work-ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1.5px;
+}
+@media (max-width: 760px) {
+  .wk-row {
+    grid-template-columns: minmax(0, 1fr) 18px;
+  }
+  .wk-line,
+  .wk-meta {
+    grid-column: 1;
+  }
+  .wk-go {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+

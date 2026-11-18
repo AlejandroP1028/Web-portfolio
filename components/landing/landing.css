@@ -3,7 +3,8 @@
 .landing,
 .side-page,
 .lp,
-.pp {
+.pp,
+.wk {
   --paper: #f4f4f1;
   --ink: #16181b;
   --muted: #5e636b;
@@ -28,7 +29,7 @@
 /* Dark: follows the system unless the theme picker set <html data-theme> (see ThemeToggle).
    The same values twice, so an explicit choice wins either way. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) :is(.landing, .side-page, .lp, .pp) {
+  :root:not([data-theme="light"]) :is(.landing, .side-page, .lp, .pp, .wk) {
     --paper: #121315;
     --ink: #e9eaec;
     --muted: #a0a5ad;
@@ -43,7 +44,7 @@
     color-scheme: dark;
   }
 }
-:root[data-theme="dark"] :is(.landing, .side-page, .lp, .pp) {
+:root[data-theme="dark"] :is(.landing, .side-page, .lp, .pp, .wk) {
   --paper: #121315;
   --ink: #e9eaec;
   --muted: #a0a5ad;
@@ -118,6 +119,9 @@
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
+}
+.theme-toggle .sketch.still {
+  animation: none;
 }
 .theme-toggle .sketch.erase {
   animation: theme-erase 0.28s cubic-bezier(0.45, 0, 0.25, 1) both;
@@ -518,6 +522,22 @@
 .landing .wipe.on {
   display: block;
 }
+/* Work's wipe is paper on the paper landing, so it needs an edge to read as the laptop's
+   screen growing. A filter on the parent runs after the child's clip-path, so these four
+   hard drop-shadows trace the clipped shape at any size. */
+.landing .wipe-edge {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+}
+.landing .wipe-edge .wipe {
+  pointer-events: auto;
+}
+.landing .wipe-edge:has(.wipe[data-side="work"].on),
+.landing.ret-work .wipe-edge {
+  filter: drop-shadow(1.5px 0 0 var(--ink)) drop-shadow(-1.5px 0 0 var(--ink)) drop-shadow(0 1.5px 0 var(--ink)) drop-shadow(0 -1.5px 0 var(--ink));
+}
 .landing .wipe,
 .side-page {
   background: var(--bgc);
@@ -577,7 +597,7 @@
 .landing.is-returning .wipe {
   display: block;
 }
-.landing.ret-work .wipe { --bgc: var(--work); }
+.landing.ret-work .wipe { --bgc: var(--paper); }
 .landing.ret-learning .wipe { --bgc: var(--pill-bg); }
 /* back from the Learning index: the colour starts as that page's panel (same box as
    components/learning/panel.ts), not the whole screen, from the very first paint */
@@ -596,10 +616,10 @@
 }
 .landing.ret-fun .wipe { --bgc: var(--fun); }
 
-[data-side="work"].wipe,
-.side-page[data-side="work"] {
-  --bgc: var(--work);
-  --onc: var(--work-on);
+/* Work opens onto the landing's own paper (the Work index), so its wipe is paper too */
+[data-side="work"].wipe {
+  --bgc: var(--paper);
+  --onc: var(--ink);
 }
 [data-side="learning"].wipe,
 .side-page[data-side="learning"] {

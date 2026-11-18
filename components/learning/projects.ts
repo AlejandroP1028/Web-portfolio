@@ -31,6 +31,7 @@ export type Project = {
   demo?: "showcase" | "bionic";
   links?: { label: string; href: string }[];
   credit?: string;
+  org?: string; // Work: the job it belongs to, shown as a group on the Work index
 };
 
 export const PROJECTS: Project[] = [
@@ -104,48 +105,6 @@ export const PROJECTS: Project[] = [
     ],
   },
   {
-    slug: "rtu-queueing-system",
-    title: "RTU Queueing System",
-    line: "A paperless queue for the MIS office at RTU",
-    state: "done",
-    when: "Mar to Sep 2025",
-    stack: ["Next.js", "Socket.IO", "Prisma", "MySQL", "Zustand"],
-    role: "Project lead, team of 7",
-    intro: [
-      "The MIS office at RTU handles documents for everyone on campus: students, teachers, anyone with a request. Instead of standing in line, people take a queue number from their phone. Staff call them to a window, and a board on the wall shows who's being served.",
-      "I led the project. I designed the architecture, worked with the office, talked to the people on all three sides (the public, the staff at the windows, and the supervisor) and ran it as the product manager. We were seven interns.",
-    ],
-    why: [
-      "There were two Wi-Fi routers. The one people joined had no internet, only a route to the server with the queue form. We did that on purpose, so nobody could queue from home, and nobody would connect and just hang around the office on free Wi-Fi.",
-    ],
-    flow: [
-      { label: "Phone", sub: "joins the office Wi-Fi, which has no internet" },
-      { label: "Queue form", sub: "a short form, then a number" },
-      { label: "Socket.IO server", sub: "pushes every change to every screen" },
-      { label: "Windows and board", sub: "staff call the next person, the board updates" },
-    ],
-    hard: {
-      title: "Making it make sense to the people using it",
-      body: [
-        "The hardest part was the interface. Things that seemed obvious to us didn't make sense to the people in line or at the windows. I talked to them, but I also just watched how they moved through the app, and we redesigned around what they actually did.",
-      ],
-    },
-    extra: [
-      {
-        title: "Where it ended",
-        body: [
-          "We tested it in the office and it went well. The university didn't fund it, and since we were interns paying our own way, that's where it stopped.",
-        ],
-      },
-    ],
-    shots: [
-      { src: "rtu-board", alt: "The board on the wall: windows 1 and 2 serving tickets 10 and 9, the waiting numbers listed down the side", caption: "The board on the wall" },
-      { src: "rtu-form", alt: "The queue form: choose regular or priority, then who you are", caption: "Taking a number" },
-      { src: "rtu-admin", alt: "A staff member's screen: the people waiting for their window", caption: "A window's queue" },
-      { src: "rtu-sa-dashboard", alt: "The supervisor's dashboard: today's finished, waiting and cancelled tickets and every window's status", caption: "The supervisor's dashboard" },
-    ],
-  },
-  {
     slug: "academic-performance-predictor",
     title: "Academic Performance Predictor",
     line: "My thesis: does procrastinating show up in your grades?",
@@ -214,6 +173,76 @@ export const PROJECTS: Project[] = [
   },
 ];
 
+/** The Work side: projects from jobs, grouped by `org` on the Work index (newest job first). */
+export const WORK: Project[] = [
+  {
+    slug: "seven-gen",
+    org: "Seven-Gen",
+    title: "Software at Seven-Gen",
+    line: "Desktop apps, internal tools and dashboards people use all day",
+    state: "running",
+    when: "since Oct 2025",
+    stack: ["React", "TypeScript", "Electron", "Node", "Python"],
+    role: "Junior frontend developer",
+    intro: [
+      "I build software the company and its customers use every day: desktop apps that run on their own for long stretches, internal tools for staff, and dashboards for customers.",
+      "My title is frontend, but the work goes past it: I've also written backend services, background workers and the packaging that ships the desktop apps.",
+    ],
+    features: [
+      { title: "Desktop apps", body: "Apps that run all day without anyone watching them, mostly the screens people use" },
+      { title: "Behind the screens", body: "Backend services and background workers, and building and releasing the desktop apps" },
+      { title: "Internal tools", body: "Admin consoles and tools staff use to set things up and check work" },
+      { title: "Customer dashboards", body: "Report pages with charts you can drill into, on live data" },
+      { title: "Working with people", body: "Teams from two developers to a few dozen. On one product I ended up setting the direction for a team of four" },
+    ],
+  },
+  {
+    slug: "rtu-queueing-system",
+    title: "RTU Queueing System",
+    org: "RTU internship",
+    line: "A paperless queue for the MIS office at RTU",
+    state: "done",
+    when: "Mar to Sep 2025",
+    stack: ["Next.js", "Socket.IO", "Prisma", "MySQL", "Zustand"],
+    role: "Project lead, team of 7",
+    intro: [
+      "The MIS office at RTU handles documents for everyone on campus: students, teachers, anyone with a request. Instead of standing in line, people take a queue number from their phone. Staff call them to a window, and a board on the wall shows who's being served.",
+      "I led the project. I designed the architecture, worked with the office, talked to the people on all three sides (the public, the staff at the windows, and the supervisor) and ran it as the product manager. We were seven interns.",
+    ],
+    why: [
+      "There were two Wi-Fi routers. The one people joined had no internet, only a route to the server with the queue form. We did that on purpose, so nobody could queue from home, and nobody would connect and just hang around the office on free Wi-Fi.",
+    ],
+    flow: [
+      { label: "Phone", sub: "joins the office Wi-Fi, which has no internet" },
+      { label: "Queue form", sub: "a short form, then a number" },
+      { label: "Socket.IO server", sub: "pushes every change to every screen" },
+      { label: "Windows and board", sub: "staff call the next person, the board updates" },
+    ],
+    hard: {
+      title: "Making it make sense to the people using it",
+      body: [
+        "The hardest part was the interface. Things that seemed obvious to us didn't make sense to the people in line or at the windows. I talked to them, but I also just watched how they moved through the app, and we redesigned around what they actually did.",
+      ],
+    },
+    extra: [
+      {
+        title: "Where it ended",
+        body: [
+          "We tested it in the office and it went well. The university didn't fund it, and since we were interns paying our own way, that's where it stopped.",
+        ],
+      },
+    ],
+    shots: [
+      { src: "rtu-board", alt: "The board on the wall: windows 1 and 2 serving tickets 10 and 9, the waiting numbers listed down the side", caption: "The board on the wall" },
+      { src: "rtu-form", alt: "The queue form: choose regular or priority, then who you are", caption: "Taking a number" },
+      { src: "rtu-admin", alt: "A staff member's screen: the people waiting for their window", caption: "A window's queue" },
+      { src: "rtu-sa-dashboard", alt: "The supervisor's dashboard: today's finished, waiting and cancelled tickets and every window's status", caption: "The supervisor's dashboard" },
+    ],
+  },
+];
+
 export const NOW = ["Rust", "automation pipelines", "backend stuff"];
 
-export const bySlug = (slug: string) => PROJECTS.find((p) => p.slug === slug);
+export type Side = "learning" | "work";
+export const listOf = (side: Side) => (side === "work" ? WORK : PROJECTS);
+export const bySlug = (slug: string, side: Side = "learning") => listOf(side).find((p) => p.slug === slug);

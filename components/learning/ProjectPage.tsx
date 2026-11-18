@@ -9,7 +9,7 @@ import { SplitText } from "gsap/SplitText";
 import { sans, mono, hand } from "../landing/fonts";
 import ThemeToggle from "../landing/ThemeToggle";
 import Bionic from "./Bionic";
-import { PROJECTS, type Feature, type Project, type Shot } from "./projects";
+import { listOf, type Feature, type Project, type Shot, type Side } from "./projects";
 import { FROM_PROJECT_KEY } from "./panel";
 
 gsap.registerPlugin(SplitText);
@@ -187,7 +187,9 @@ function Zoom({ shot, phone, onClose }: { shot: Shot; phone?: boolean; onClose: 
     </div>
   );
 }
-export default function ProjectPage({ project: p }: { project: Project }) {
+export default function ProjectPage({ project: p, side = "learning" }: { project: Project; side?: Side }) {
+  const list = listOf(side);
+  const home = side === "work" ? "Work" : "Learning";
   const router = useRouter();
   const rootRef = useRef<HTMLElement>(null);
   const busy = useRef(false);
@@ -200,9 +202,9 @@ export default function ProjectPage({ project: p }: { project: Project }) {
     try { v = sessionStorage.getItem(NEXT_KEY); } catch {}
     fromNextRef.current = v === "next" ? 1 : v === "prev" ? -1 : 0;
   }
-  const i = PROJECTS.findIndex((x) => x.slug === p.slug);
-  const next = PROJECTS[(i + 1) % PROJECTS.length];
-  const prev = PROJECTS[(i - 1 + PROJECTS.length) % PROJECTS.length];
+  const i = list.findIndex((x) => x.slug === p.slug);
+  const next = list[(i + 1) % list.length];
+  const prev = list[(i - 1 + list.length) % list.length];
 
   // Arriving: the hero rises in (or, from the previous project's Next link, the page slides
   // in from the right). Everything below reveals as it scrolls into view. With reduced
@@ -282,7 +284,7 @@ export default function ProjectPage({ project: p }: { project: Project }) {
     gsap.to(root.querySelectorAll(".pp-status, .pp-bar .dot"), { opacity: 0, duration: 0.2 });
     gsap.to(root.querySelector(".pp-wrap"), {
       x: -70 * d, opacity: 0, duration: 0.38, ease: "power2.in",
-      onComplete: () => router.push(`/learning/${to.slug}`),
+      onComplete: () => router.push(`/${side}/${to.slug}`),
     });
   };
 
@@ -292,16 +294,16 @@ export default function ProjectPage({ project: p }: { project: Project }) {
     if (busy.current || reduced() || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     e.preventDefault();
     busy.current = true;
-    gsap.to(rootRef.current!.querySelectorAll(".pp-bar, .pp-wrap"), { opacity: 0, duration: 0.16, onComplete: () => router.push("/learning") });
+    gsap.to(rootRef.current!.querySelectorAll(".pp-bar, .pp-wrap"), { opacity: 0, duration: 0.16, onComplete: () => router.push(`/${side}`) });
   };
 
   return (
-    <main ref={rootRef} className={`pp ${sans.variable} ${mono.variable} ${hand.variable}`}>
+    <main ref={rootRef} className={`pp ${side} ${sans.variable} ${mono.variable} ${hand.variable}`}>
       <ThemeToggle />
       <header className="pp-bar">
-        <Link className="pp-back" href="/learning" onClick={back}>
+        <Link className="pp-back" href={`/${side}`} onClick={back}>
           <ArrowLeft size={16} strokeWidth={1.5} aria-hidden="true" />
-          Learning
+          {home}
         </Link>
         <span className={`dot ${p.state === "running" ? "run" : "ok"}`} aria-hidden="true" />
         {p.status && <span className="pp-status">{p.status}</span>}
@@ -336,7 +338,7 @@ export default function ProjectPage({ project: p }: { project: Project }) {
         </Part>
 
         {p.features && (
-          <Part label="what you can do with it">
+          <Part label={side === "work" ? "what I did" : "what you can do with it"}>
             <Features items={p.features} />
           </Part>
         )}
@@ -404,14 +406,17 @@ export default function ProjectPage({ project: p }: { project: Project }) {
         )}
 
         <nav className="pp-pager pp-in" aria-label="Other projects">
-          <Link className="prev" href={`/learning/${prev.slug}`} onClick={step(prev, -1)}>
-            <span>Previous</span>
-            <b>
-              <ArrowLeft size={18} strokeWidth={1.5} aria-hidden="true" />
-              {prev.title}
-            </b>
-          </Link>
-          <Link className="next" href={`/learning/${next.slug}`} onClick={step(next, 1)}>
+          {/* with two projects both neighbours are the same one: show it once */}
+          {prev.slug !== next.slug && (
+            <Link className="prev" href={`/${side}/${prev.slug}`} onClick={step(prev, -1)}>
+              <span>Previous</span>
+              <b>
+                <ArrowLeft size={18} strokeWidth={1.5} aria-hidden="true" />
+                {prev.title}
+              </b>
+            </Link>
+          )}
+          <Link className="next" href={`/${side}/${next.slug}`} onClick={step(next, 1)}>
             <span>Next</span>
             <b>
               {next.title}

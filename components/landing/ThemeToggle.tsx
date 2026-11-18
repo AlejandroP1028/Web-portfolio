@@ -7,6 +7,9 @@ import { THEME_KEY } from "./theme";
 
 type Theme = "light" | "dark";
 
+// Every page mounts its own button; the icon draws in once per page load, then only on a switch.
+let drawnOnce = false;
+
 const systemTheme = (): Theme => (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 
 /**
@@ -16,10 +19,13 @@ const systemTheme = (): Theme => (window.matchMedia("(prefers-color-scheme: dark
 export default function ThemeToggle() {
   // unknown during server render; filled in on mount so hydration matches
   const [theme, setTheme] = useState<Theme | null>(null);
+  const [still] = useState(() => drawnOnce);
+  const [switched, setSwitched] = useState(false);
 
   useEffect(() => {
     const read = () => (document.documentElement.dataset.theme as Theme | undefined) ?? systemTheme();
     setTheme(read());
+    drawnOnce = true;
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const onSystem = () => setTheme(read());
     mq.addEventListener("change", onSystem);
@@ -35,7 +41,10 @@ export default function ThemeToggle() {
       try {
         localStorage.setItem(THEME_KEY, t);
       } catch {}
-      flushSync(() => setTheme(t));
+      flushSync(() => {
+        setSwitched(true);
+        setTheme(t);
+      });
     };
     // The new theme grows out of the button as a circle (a view transition: the browser
     // snapshots the page before and after, and the new snapshot is revealed by the clip).
@@ -64,7 +73,7 @@ export default function ThemeToggle() {
         setTimeout(() => pick(next, b), 280);
       }} aria-label={`Switch to ${next} theme`}>
       {theme && (
-        <svg key={theme} className={`sketch${erasing ? " erase" : ""}`} viewBox="0 0 24 24" aria-hidden="true">
+        <svg key={theme} className={`sketch${erasing ? " erase" : still && !switched ? " still" : ""}`} viewBox="0 0 24 24" aria-hidden="true">
           <path pathLength={1} d={theme === "dark" ? MOON : SUN} />
         </svg>
       )}
