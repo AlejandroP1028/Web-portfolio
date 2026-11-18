@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
-import { User, Code, Layers, Beaker, Mail, Download } from "lucide-react";
+import { User, Briefcase, Code, Layers, Beaker, Mail, Download } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 gsap.registerPlugin(ScrollToPlugin);
 const navItems = [
   { id: "#about", icon: User, label: "About" },
+  { id: "#experience", icon: Briefcase, label: "Work" },
   { id: "#projects", icon: Code, label: "Projects" },
   { id: "#techstack", icon: Layers, label: "Tech" },
   // { id: "#experiments", icon: Beaker, label: "Labs" },

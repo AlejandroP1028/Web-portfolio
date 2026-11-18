@@ -5,17 +5,32 @@ import { useRef } from "react";
 const techStack = {
   Frontend: {
     primary: ["JavaScript", "TypeScript", "React", "Next.js", "Tailwind CSS"],
-    secondary: ["HTML/CSS", "Framer Motion", "GSAP", "shadcn/ui", "Vue.js"],
+    secondary: [
+      "HTML/CSS",
+      "Framer Motion",
+      "GSAP",
+      "shadcn/ui",
+      "Vue.js",
+      "Zustand",
+      "React Query",
+    ],
     description: "Building interactive and responsive user interfaces",
   },
   Backend: {
-    primary: ["Node.js", "Python", "PHP"],
-    secondary: ["Laravel", "Flask", "RESTful APIs", "Socket.io"],
+    primary: ["Node.js", "Electron", "Python", "PHP"],
+    secondary: [
+      "Laravel",
+      "Flask",
+      "RESTful APIs",
+      "Socket.io",
+      "Puppeteer",
+      "Chrome Extensions",
+    ],
     description: "Server-side development and API design",
   },
   Database: {
     primary: ["PostgreSQL", "MongoDB", "SQL"],
-    secondary: ["Prisma ORM", "Firebase", "Supabase"],
+    secondary: ["SQLite", "Prisma ORM", "Firebase", "Supabase"],
     description: "Data modeling and database optimization",
   },
   Tools: {

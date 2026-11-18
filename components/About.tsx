@@ -61,9 +61,10 @@ export default function About() {
               like building things that work and solve real problems.
             </p>
             <p className="text-gray-600 leading-relaxed mb-6">
-              I’ve worked on projects like real-time systems, dynamic forms, and
-              performance improvements. I enjoy figuring out how to make
-              software do what it needs to do.
+              For the past year I’ve been a software developer at Seven-Gen,
+              shipping desktop apps, browser extensions, and dashboards for
+              media monitoring. Most days I’m tracking down why something
+              fails quietly and making sure it fails loudly instead.
             </p>
             <p className="text-gray-600 leading-relaxed">
               In my free time, I explore new tools, read about how software is
