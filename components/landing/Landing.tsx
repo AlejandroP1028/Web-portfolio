@@ -33,7 +33,7 @@ type Scene = { setHover(side: Side | null): void; target(side: "work" | "fun"): 
 const NAME = HEADLINE; // the drawn headline is a handwriting trace; regenerate it to change the words
 const RETURN_KEY = "landing-return";
 /** Intro playback speed: 1 is about 8s; 1.25 is faster, 0.8 slower. */
-const INTRO_SPEED = 1;
+const INTRO_SPEED = 1.8;
 // Module state survives client-side navigation but not a refresh, so the intro plays on
 // every full page load and the way back from a side page plays instead after in-app navigation.
 let loadedOnce = false;
@@ -206,7 +206,10 @@ export default function Landing() {
     pens.forEach((p, i) => gsap.set(p, { strokeDasharray: `${lens[i]} ${lens[i] + PEN_WIDTH * 2}`, strokeDashoffset: lens[i], strokeOpacity: 0 }));
     gsap.set(typed, { visibility: "visible" });
 
-    const PEN_TIME = 2; // seconds of pen time for the whole line, shared out by stroke length
+    // each stroke starts while the previous one is finishing; PEN_TIME is stretched so the
+    // overlapped line still takes about 2s
+    const OVERLAP = 0.5; // share of a stroke still left to draw when the next one starts
+    const PEN_TIME = 2 / (1 - OVERLAP); // seconds of pen time for the whole line, shared out by stroke length
     const write = gsap.timeline();
     let t = 0;
     pens.forEach((p, i) => {
@@ -214,7 +217,7 @@ export default function Landing() {
       write.call(() => { followX(under(p.getBoundingClientRect().right).x); }, [], t)
         .set(p, { strokeOpacity: 1 }, t)
         .to(p, { strokeDashoffset: 0, duration: d, ease: "power1.inOut" }, t);
-      t += d;
+      t += d * (1 - OVERLAP);
     });
 
     const tl = gsap.timeline({ defaults: { ease: "power3.out" }, onComplete: finish });
