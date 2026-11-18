@@ -176,9 +176,9 @@ export const PROJECTS: Project[] = [
 /** The Work side: projects from jobs, grouped by `org` on the Work index (newest job first). */
 export const WORK: Project[] = [
   {
-    slug: "seven-gen",
-    org: "Seven-Gen",
-    title: "Software at Seven-Gen",
+    slug: "media-meter",
+    org: "Media Meter Inc.",
+    title: "Software at Media Meter",
     line: "Desktop apps, internal tools and dashboards people use all day",
     state: "running",
     when: "since Sep 2025",
@@ -202,12 +202,12 @@ export const WORK: Project[] = [
     org: "RTU internship",
     line: "A paperless queue for the MIS office at RTU",
     state: "done",
-    when: "Mar to Sep 2025",
+    when: "Mar to May 2024",
     stack: ["Next.js", "Socket.IO", "Prisma", "MySQL", "Zustand"],
-    role: "Project lead, team of 7",
+    role: "Project lead, team of 8",
     intro: [
       "The MIS office at RTU handles documents for everyone on campus: students, teachers, anyone with a request. Instead of standing in line, people take a queue number from their phone. Staff call them to a window, and a board on the wall shows who's being served.",
-      "I led the project. I designed the architecture, worked with the office, talked to the people on all three sides (the public, the staff at the windows, and the supervisor) and ran it as the product manager. We were seven interns.",
+      "I led the project. I designed the architecture, worked with the office, talked to the people on all three sides (the public, the staff at the windows, and the supervisor) and ran it as the product manager. We were eight interns.",
     ],
     why: [
       "There were two Wi-Fi routers. The one people joined had no internet, only a route to the server with the queue form. We did that on purpose, so nobody could queue from home, and nobody would connect and just hang around the office on free Wi-Fi.",
