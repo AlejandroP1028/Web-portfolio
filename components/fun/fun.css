@@ -1,81 +1,60 @@
-/* The Fun page: the Work index's paper (.wk), with each game as a block of screenshots and a few words */
-.fn-game {
-  margin-top: clamp(48px, 8vw, 88px);
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-  gap: 24px 40px;
-  align-items: start;
+/* The Fun page: a scrapbook on dotted notebook paper (the Work index's .wk page underneath).
+   Each game is a spread: taped polaroids on one side, a handwritten note on the other. */
+.fn {
+  --tape: color-mix(in srgb, #f2c27a 70%, transparent);
+  position: relative;
+  overflow-x: clip; /* tilted polaroids must never widen the page */
 }
-/* the screenshots of one game, compiled into one block: a big first shot, the rest in a strip under it */
-.fn-shots {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+/* the dotted notebook paper spreads out over the page on arrival, from the upper right, instead of
+   popping in. Through the controller's wipe it's already there (.via-wipe): the wipe carries it. Browsers without @property just fade it. */
+@property --dot-a {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 14%;
 }
-.fn-shots img {
-  width: 100%;
-  display: block;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-  border-radius: 6px;
-  background: var(--line);
+@property --dots-r {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 100000px; /* at rest: the whole page, however long */
 }
-.fn-shots img:first-child {
-  grid-column: 1 / -1;
-  border-radius: 10px;
+.fn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(color-mix(in srgb, var(--ink) var(--dot-a), transparent) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(circle at 80% 0, #000 var(--dots-r), transparent calc(var(--dots-r) + 140px));
+  mask-image: radial-gradient(circle at 80% 0, #000 var(--dots-r), transparent calc(var(--dots-r) + 140px));
+  /* backwards, not both: once it ends the mask goes back to covering the whole page */
+  animation: fn-dots 2.2s cubic-bezier(0.25, 0, 0.25, 1) 0.1s backwards;
 }
-.fn-shots.n2 img:not(:first-child),
-.fn-shots.n3 img:not(:first-child) {
-  grid-column: span 2;
+.fn.via-wipe::before {
+  animation: none;
 }
-.fn-text {
-  display: grid;
-  gap: 10px;
-  align-content: start;
-  padding-top: 4px;
+.fn > .wk-inner {
+  position: relative;
 }
-.fn-text h2 {
-  margin: 0;
-  font: 400 clamp(1.9rem, 3.4vw, 2.5rem)/1.05 var(--font-landing-hand), "Comic Sans MS", cursive;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 12px;
+@keyframes fn-dots {
+  /* the dots arrive darker and settle to their resting tone as the wave passes */
+  from {
+    --dots-r: 0px;
+    --dot-a: 45%;
+  }
+  60% {
+    --dot-a: 30%;
+  }
+  to {
+    --dots-r: 2200px; /* well past the first screen */
+    --dot-a: 14%;
+  }
 }
-.fn-tag {
-  font: 400 1.2rem/1 var(--font-landing-hand), cursive;
-  color: var(--fun-ink);
+.fn h1 {
+  font: 400 clamp(4.5rem, 14vw, 8rem)/1 var(--font-landing-hand), "Comic Sans MS", cursive;
+  letter-spacing: 0;
 }
-.fn-status {
-  font: 12px/1 var(--mono);
-  color: var(--muted);
-}
-.fn-text p {
-  margin: 4px 0 0;
-  color: var(--ink);
-  line-height: 1.6;
-  max-width: 46ch;
-}
-.fn-text a {
-  justify-self: start;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  font: 13px/1 var(--mono);
-  color: var(--fun-ink);
-  text-underline-offset: 4px;
-}
-.fn-made-head {
-  margin: clamp(64px, 10vw, 112px) 0 0;
-  padding-top: 24px;
-  border-top: 1.5px solid var(--ink);
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-.fn-made-head + .fn-game {
-  margin-top: 32px;
+.fn .wk-sub {
+  font: 400 1.5rem/1.3 var(--font-landing-hand), cursive;
 }
 .fn ::selection {
   background: var(--fun);
@@ -84,8 +63,171 @@
 .fn :focus-visible {
   outline-color: var(--fun);
 }
+
+.sb-spread {
+  margin-top: clamp(72px, 11vw, 128px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 32px 48px;
+  align-items: center;
+}
+.sb-spread.flip {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+}
+.sb-spread.flip .sb-pics {
+  order: 2;
+}
+
+/* the polaroids: up to three, overlapping */
+.sb-pics {
+  position: relative;
+  height: clamp(300px, 34vw, 440px);
+}
+.sb-pol {
+  --r: 0deg;
+  position: absolute;
+  width: 62%;
+  padding: 10px 10px 36px;
+  border: 0;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+  transform: rotate(var(--r));
+  cursor: zoom-in;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+.sb-pol img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+.sb-pol:nth-child(1) { left: 0; top: 24px; z-index: 2; }
+.sb-pol:nth-child(2) { right: 0; top: 0; }
+.sb-pol:nth-child(3) { left: 22%; top: 46%; z-index: 3; width: 50%; }
+.sb-pics.n1 .sb-pol { left: 8%; top: 8%; width: 80%; }
+.sb-pics.n2 .sb-pol:nth-child(2) { top: 34%; }
+/* picking one up: it straightens, lifts and comes to the front */
+.sb-pol:hover,
+.sb-pol:focus-visible {
+  transform: rotate(0deg) translateY(-8px) scale(1.03);
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.28);
+  z-index: 5;
+}
+.sb-tape {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  width: 92px;
+  height: 24px;
+  margin-left: -46px;
+  background: var(--tape);
+  transform: rotate(-3deg);
+  transform-origin: left center;
+}
+.sb-cap {
+  position: absolute;
+  left: 12px;
+  bottom: 6px;
+  font: 400 1.15rem/1 var(--font-landing-hand), cursive;
+  color: #2b2d31;
+}
+
+/* the note */
+.sb-note {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+.sb-arrow {
+  width: 120px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sb-arrow.flip {
+  transform: scaleX(-1);
+}
+.sb-note h2 {
+  margin: 0;
+  font: 400 clamp(2.4rem, 4.6vw, 3.6rem)/1 var(--font-landing-hand), "Comic Sans MS", cursive;
+}
+.sb-stamp {
+  display: inline-block;
+  font: 600 12px/1 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fun-ink);
+  border: 2px solid var(--fun-ink);
+  border-radius: 6px;
+  padding: 6px 9px;
+  transform: rotate(-4deg);
+}
+.sb-note p {
+  margin: 4px 0 0;
+  max-width: 32ch;
+  font: 400 clamp(1.35rem, 2vw, 1.6rem)/1.35 var(--font-landing-hand), cursive;
+  color: var(--ink);
+}
+.sb-note a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font: 13px/1 var(--mono);
+  color: var(--fun-ink);
+  text-underline-offset: 4px;
+}
+
+/* games I made: the last spread, set off by a hand-drawn rule */
+.sb-made {
+  margin-top: clamp(72px, 11vw, 128px);
+  border-top: 2px dashed var(--ink);
+}
+.sb-made .sb-spread {
+  margin-top: 56px;
+}
+
+/* a photo, larger */
+.sb-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px));
+  background: rgba(10, 10, 12, 0.82);
+  cursor: zoom-out;
+  animation: landing-enter 0.2s var(--ease);
+}
+.sb-zoom img {
+  max-width: 100%;
+  max-height: calc(100dvh - 48px);
+  border: 10px solid #fff;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+}
+
 @media (max-width: 760px) {
-  .fn-game {
+  .sb-spread,
+  .sb-spread.flip {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .sb-spread.flip .sb-pics {
+    order: 0;
+  }
+  .sb-pics {
+    height: 64vw;
+  }
+  .sb-arrow {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sb-pol {
+    transition: none;
+  }
+  .fn::before {
+    animation: none;
   }
 }

@@ -631,6 +631,13 @@
   --bgc: var(--paper);
   --onc: var(--ink);
 }
+/* ...the Fun page's dotted notebook paper, on the same 22px grid (fun.css), so the circle growing
+   out of the controller already carries the page's dots and the hand-over doesn't jump */
+.landing .wipe[data-side="fun"],
+.landing.ret-fun .wipe {
+  background-image: radial-gradient(color-mix(in srgb, var(--ink) 14%, transparent) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+}
 
 .side-page {
   min-height: 100vh;

@@ -1,6 +1,10 @@
 // The Fun page: games I play, each with its screenshots, plus games I've made.
 // Excerpts are in Alejandro's words; `TODO` marks ones he hasn't written yet.
 
+/** Set by the landing when the Fun wipe (which carries the dotted paper) led here: the Fun page then
+ *  doesn't play its own dot reveal. sessionStorage. */
+export const FUN_VIA_WIPE_KEY = "fun-via-wipe";
+
 export type Game = {
   slug: string; // also the image prefix in public/fun: <slug>-1.webp, <slug>-2.webp…
   name: string;
@@ -55,8 +59,12 @@ export const GAMES: Game[] = [
   {
     slug: "clair",
     name: "Clair Obscur: Expedition 33",
-    shots: 1,
-    alt: ["A man in a suit looking out over a city with broken towers"],
+    shots: 3,
+    alt: [
+      "A man in a suit looking out over a city with broken towers",
+      "The expedition standing in a meadow under a broken sky",
+      "A turn-based fight against a leafy creature, the party's portraits down the side",
+    ],
     status: "played",
     excerpt: "Clair Obscur is so good. The story, the gameplay, the graphics, the music and the worldbuilding. SO GOOOD.",
   },
@@ -80,8 +88,12 @@ export const GAMES: Game[] = [
   {
     slug: "fish",
     name: "How to Fish",
-    shots: 1,
-    alt: ["A cosy wooden shop with a fish on the counter"],
+    shots: 3,
+    alt: [
+      "A cosy wooden shop with a fish on the counter",
+      "Reeling a fish out of the sea on a palm-tree island",
+      "Two shopkeepers trading a seagull at a stall full of weapons",
+    ],
     status: "played",
     excerpt: "All in sa pula.",
   },

@@ -24,6 +24,7 @@ const TIP_TIMES = (() => {
 })();
 const TIP_WRITTEN = TIP_TIMES[TIP_TIMES.length - 1].reduce((a, b) => a + b);
 import { sans, mono, hand } from "./fonts";
+import { FUN_VIA_WIPE_KEY } from "../fun/games";
 import { panelInset } from "../learning/panel";
 import type { AnimState, Side, Target } from "./scene";
 import "./landing.css";
@@ -410,6 +411,7 @@ export default function Landing() {
         await grow(insetOf(rectOf(stage), 18), 0.56, "power3.inOut");
       }
       if (side !== "learning") store.set(RETURN_KEY, side); // learning is an overlay: the landing never leaves
+      if (side === "fun") store.set(FUN_VIA_WIPE_KEY, "1"); // the wipe already drew the dotted paper
       router.push(`/${side}`);
     };
     run();
