@@ -181,7 +181,7 @@ export const WORK: Project[] = [
     title: "Software at Seven-Gen",
     line: "Desktop apps, internal tools and dashboards people use all day",
     state: "running",
-    when: "since Oct 2025",
+    when: "since Sep 2025",
     stack: ["React", "TypeScript", "Electron", "Node", "Python"],
     role: "Junior frontend developer",
     intro: [
