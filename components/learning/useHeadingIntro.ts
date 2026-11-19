@@ -33,8 +33,8 @@ export function useHeadingIntro(rootRef: RefObject<HTMLElement>, { rest, items, 
         const tl = gsap
           .timeline({ defaults: { ease: "power3.out" } })
           .from(split.current.chars, { yPercent: 110, duration: 0.7, stagger: 0.04 })
-          .from(q(rest), { y: 10, opacity: 0, duration: 0.45, stagger: 0.05 }, 0.2);
-        if (items) tl.from(q(items), { y: 8, opacity: 0, duration: 0.4, stagger: 0.035 }, 0.35);
+          .from(q(rest), { y: 10, opacity: 0, duration: 0.45, stagger: 0.05, clearProps: "transform,opacity" }, 0.2);
+        if (items) tl.from(q(items), { y: 8, opacity: 0, duration: 0.4, stagger: 0.035, clearProps: "transform,opacity" }, 0.35);
       });
     });
     return () => {

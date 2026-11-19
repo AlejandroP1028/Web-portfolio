@@ -638,6 +638,17 @@
   background-image: radial-gradient(color-mix(in srgb, var(--ink) 14%, transparent) 1px, transparent 1.4px);
   background-size: 22px 22px;
 }
+/* ...and the Work index's engineering pad (.wk-pad in learning.css), so the laptop's screen grows
+   into the page's own paper, both ways */
+.landing .wipe[data-side="work"],
+.landing.ret-work .wipe {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--ink) 11%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--ink) 11%, transparent) 1px, transparent 1px),
+    linear-gradient(color-mix(in srgb, var(--ink) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--ink) 6%, transparent) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+}
 
 .side-page {
   min-height: 100vh;

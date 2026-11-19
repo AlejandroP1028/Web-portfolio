@@ -23,3 +23,6 @@ export function panelInset(round = PANEL_RADIUS) {
 // sessionStorage keys shared by the landing and the Learning pages
 export const RETURN_KEY = "landing-return"; // the landing plays the way back into this side
 export const FROM_PROJECT_KEY = "learning-from-project"; // the index plays a project page shrinking back into it
+/** Set by the landing when the laptop's wipe (which carries the graph paper) led to Work: the Work
+ *  index then doesn't rule its own paper in. */
+export const WORK_VIA_WIPE_KEY = "work-via-wipe";
